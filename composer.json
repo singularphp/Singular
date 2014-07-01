@@ -1,4 +1,12 @@
 {
+    "name": "singular/singular",
+    "description": "Framework Silex modificado para utilização em projetos da Net On",
+    "authors": [
+        {
+            "name": "Otávio Fernandes",
+            "email": "otavio@netonsolucoes.com.br"
+        }
+    ],
     "require": {
         "php": ">=5.3.3",
         "silex/silex": "1.1",
@@ -8,5 +16,10 @@
         "twig/twig": ">=1.8,<2.0-dev",
         "symfony/twig-bridge": "~2.3",
         "monolog/monolog": "1.7.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "Singular": "src/"
+        }
     }
 }
