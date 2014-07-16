@@ -79,12 +79,12 @@ class Application extends SilexApplication
 
         $app->register(new ServiceControllerServiceProvider());
 
-        $app['twig'] = $app->share($app->extend('twig', function($twig, $app) {
-            $twig->addGlobal('crud', $app['singular.compiler']);
+//        $app['twig'] = $app->share($app->extend('twig', function($twig, $app) {
+//            $twig->addGlobal('crud', $app['singular.compiler']);
             //$twig->addFilter('levenshtein', new \Twig_Filter_Function('levenshtein'));
 
-            return $twig;
-        }));
+//            return $twig;
+//        }));
     }
 
     /**
