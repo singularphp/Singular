@@ -9,7 +9,7 @@ namespace Singular;
  * 
  * @package Singular
  */
-class Store extends BaseService
+class SingularStore extends SingularService
 {
     /**
      * Tabela origem do store.
