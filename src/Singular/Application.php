@@ -125,7 +125,7 @@ class Application extends SilexApplication
      *
      * @return JsonResponse
      */
-    public function json($data = array(), $status = 200, array $headers = array())
+    public function json($data = array(), $status = 200, $headers = array())
     {
         return new JsonResponse($data, $status, $headers);
     }
