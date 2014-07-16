@@ -9,7 +9,7 @@ namespace Singular;
  *
  * @package Singular
  */
-class Controller extends Service
+class Controller extends BaseService
 {
     /**
      * Nome do pacote a que o controlador pertence.

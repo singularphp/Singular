@@ -9,7 +9,7 @@ namespace Singular;
  *
  * @package Singular
  */
-class Service
+class BaseService
 {
 
 } 
