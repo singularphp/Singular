@@ -52,7 +52,7 @@ class ControllerRegister
         $controllerKey = $pack->getPackName().strtolower(implode('.',explode('\\',$relativeNamespace)));
         $controller = $reflectionClass->getShortName();
 
-        $app[$controllerKey] = $this->app->share(function () use ($app, $reflectionClass) {
+        $app[$controllerKey] = $this->app->share(function () use ($app, $reflectionClass, $pack) {
             $class = $reflectionClass->getName();
 
             return new $class($app, $pack);
