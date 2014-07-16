@@ -55,7 +55,7 @@ class ControllerRegister
         $app[$controllerKey] = $this->app->share(function () use ($app, $reflectionClass) {
             $class = $reflectionClass->getName();
 
-            return new $class($app);
+            return new $class($app, $pack);
         });
 
         $$controller = $app['controllers_factory'];
