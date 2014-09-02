@@ -2,6 +2,8 @@
 
 namespace Singular;
 
+use Doctrine\DBAL\Connection;
+
 /**
  * Classe do store básico da aplicação.
  *
@@ -33,7 +35,7 @@ class SingularStore extends SingularService
     protected $conn = 'default';
 
     /**
-     * @var Connection
+     * @var \Doctrine\DBAL\Driver\Connection
      */
     protected $db;
 
@@ -71,7 +73,7 @@ class SingularStore extends SingularService
      */
     public function find($id)
     {
-        $qb = $this->qb;
+        $qb = $this->db->createQueryBuilder();
 
         $qb->select('t.*')
             ->from($this->table, 't')
@@ -91,7 +93,7 @@ class SingularStore extends SingularService
      */
     public function findOneBy($filters)
     {
-        $qb = $this->qb;
+        $qb = $this->db->createQueryBuilder();
 
         $qb->select('t.*')
             ->from($this->table, 't')
@@ -116,7 +118,7 @@ class SingularStore extends SingularService
      */
     public function findBy($filters, $opt = array())
     {
-        $qb = $this->qb;
+        $qb = $this->db->createQueryBuilder();
 
         $qb->select('t.*')
             ->from($this->table, 't')
@@ -219,7 +221,7 @@ class SingularStore extends SingularService
      *
      * @return Array
      */
-    protected function paginate(QueryBuilder $qb, $pageOpts, $filters = array())
+    protected function paginate($qb, $pageOpts, $filters = array())
     {
         $db = $this->db;
 

@@ -51,7 +51,7 @@ class Application extends SilexApplication
         });
 
         $this['singular.installer'] = $this->share(function() use ($app) {
-            return new Installer($app['base_dir']);
+//            return new Installer($app['base_dir']);
         });
 
         if (!isset($app['env'])) {
@@ -78,13 +78,6 @@ class Application extends SilexApplication
         $app = $this;
 
         $app->register(new ServiceControllerServiceProvider());
-
-//        $app['twig'] = $app->share($app->extend('twig', function($twig, $app) {
-//            $twig->addGlobal('crud', $app['singular.compiler']);
-            //$twig->addFilter('levenshtein', new \Twig_Filter_Function('levenshtein'));
-
-//            return $twig;
-//        }));
     }
 
     /**
