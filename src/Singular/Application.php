@@ -59,6 +59,10 @@ class Application extends SilexApplication
             return new \Pimple();
         });
 
+        $this['service.map'] = $this->share(function() use ($app){
+            return new \Pimple();
+        });
+
         $this['pack_register'] = $this->share(function() use ($app) {
             return new Register($app);
         });
@@ -199,6 +203,10 @@ class Application extends SilexApplication
 
         if (!isset($this->packs[$pack])) {
             return false;
+        }
+
+        if (isset($this['service.map'][$service])) {
+            $service = $this['service.map'][$service];
         }
 
         $serviceClassName = $this->packs[$pack]->getNameSpace()."\\".ucfirst($location)."\\".ucfirst($service);
