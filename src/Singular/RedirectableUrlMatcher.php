@@ -28,12 +28,13 @@ class RedirectableUrlMatcher extends BaseRedirectableUrlMatcher
      * @param Register $register
      * @param array $packs
      */
-    public function __construct(RouteCollection $routes, RequestContext $context, Register $register, $packs)
+    public function __construct(RouteCollection $routes, RequestContext $context, Register $register, $packs, $map)
     {
         $this->routes = $routes;
         $this->context = $context;
         $this->packs = $packs;
         $this->register = $register;
+        $this->map = $map;
     }
 
     /**
@@ -92,8 +93,8 @@ class RedirectableUrlMatcher extends BaseRedirectableUrlMatcher
             return;
         }
 
-        if (isset($this['service.map'][$controller])) {
-            $controller = $this['service.map'][$controller];
+        if (isset($this->map[$controller])) {
+            $controller = $this->map[$controller];
         }
 
         $controller = $this->underscoreToCamelCase($controller, true);

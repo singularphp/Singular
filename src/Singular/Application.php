@@ -52,7 +52,7 @@ class Application extends SilexApplication
         $app['web_dir'] = $app['base_dir']."/web";
 
         $this['url_matcher'] = $this->share(function () use ($app) {
-            return new RedirectableUrlMatcher($app['routes'], $app['request_context'], $app['pack_register'], $this->packs);
+            return new RedirectableUrlMatcher($app['routes'], $app['request_context'], $app['pack_register'], $this->packs, $app['service.map']);
         });
 
         $this['packs'] = $this->share(function() use ($app){
