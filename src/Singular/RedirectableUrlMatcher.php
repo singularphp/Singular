@@ -92,6 +92,10 @@ class RedirectableUrlMatcher extends BaseRedirectableUrlMatcher
             return;
         }
 
+        if (isset($this['service.map'][$controller])) {
+            $controller = $this['service.map'][$controller];
+        }
+
         $controller = $this->underscoreToCamelCase($controller, true);
 
         $fullClassName = $this->packs[$pack]->getNameSpace()."\\Controller\\".$controller;
