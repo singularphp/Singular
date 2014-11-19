@@ -5,12 +5,15 @@ use Silex\Provider\TwigServiceProvider;
 use Singular\Provider\PackServiceProvider;
 use Silex\Application as SilexApplication;
 use Silex\ServiceProviderInterface;
+use Singular\Register\ServiceRegister;
 use Symfony\Component\Finder\Finder;
 use Silex\Provider\ServiceControllerServiceProvider;
-use Singular\Exception;
 use Singular\Response\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\ParameterBag;
+use Symfony\Component\HttpKernel\HttpKernel;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Singular\RedirectableUrlMatcher;
 
 
 /**
@@ -38,26 +41,31 @@ class Application extends SilexApplication
 
         $app = $this;
 
+        $app['monitor.start_time'] = microtime(true);
+
         if (!isset($app['base_dir'])) {
-            throw Exception::baseDirNotFoundError('O diretorio raiz da aplicacao "base_dir" nao foi definido!');
+            throw new \Exception('O diretorio raiz da aplicacao "base_dir" nao foi definido!');
         } elseif (!is_dir($app['base_dir'])) {
-            throw Exception::baseDirNotFoundError('O diretorio raiz da aplicacao "base_dir" nao foi encontrado!');
+            throw new \Exception('O diretorio raiz da aplicacao "base_dir" nao foi encontrado!');
         }
 
         $app['web_dir'] = $app['base_dir']."/web";
+
+        $this['url_matcher'] = $this->share(function () use ($app) {
+            return new RedirectableUrlMatcher($app['routes'], $app['request_context'], $app['pack_register'], $this->packs);
+        });
+
+        $this['packs'] = $this->share(function() use ($app){
+            return new \Pimple();
+        });
 
         $this['pack_register'] = $this->share(function() use ($app) {
             return new Register($app);
         });
 
-        $this['singular.installer'] = $this->share(function() use ($app) {
-//            return new Installer($app['base_dir']);
-        });
-
         if (!isset($app['env'])) {
             $app['env'] = 'dev';
         }
-
 
         $app->before(function (Request $request) {
             if (0 === strpos($request->headers->get('Content-Type'), 'application/json')) {
@@ -78,6 +86,7 @@ class Application extends SilexApplication
         $app = $this;
 
         $app->register(new ServiceControllerServiceProvider());
+        $this->serviceRegister = new ServiceRegister($app);
     }
 
     /**
@@ -107,6 +116,25 @@ class Application extends SilexApplication
         foreach ($finder->in($app['base_dir']."/app")->files()->name('*.php') as $file){
             include_once $file->getRealpath();
         }
+
+    }
+
+    /**
+     * Gets a parameter or an object.
+     *
+     * @param string $id The unique identifier for the parameter or object
+     *
+     * @return mixed The value of the parameter or an object
+     *
+     * @throws InvalidArgumentException if the identifier is not defined
+     */
+    public function offsetGet($id)
+    {
+        if (!array_key_exists($id, $this->values)) {
+            $this->locateService($id);
+        }
+
+        return parent::offsetGet($id);
     }
 
     /**
@@ -133,8 +161,8 @@ class Application extends SilexApplication
      */
     public function register(ServiceProviderInterface $provider, array $values = array())
     {
-        if ($provider instanceof PackServiceProvider){
-            $this->packs[] = $provider;
+        if ($provider instanceof PackServiceProvider) {
+            $this->packs[$provider->getPackName()] = $provider;
         }
 
         parent::register($provider, $values);
@@ -151,15 +179,31 @@ class Application extends SilexApplication
 
             $this->registerDependencies();
 
-            parent::boot();
-
-
-            foreach ($this->packs as $pack){
-                $this['pack_register']->register($pack);
+            foreach ($this->packs as $pack) {
+                $pack->boot($this);
+                $pack->connect($this);
             }
 
-            $mainController = new MainController($this);
+            parent::boot();
         }
+    }
+
+    /**
+     * Tenta localizar um serviço pelo seu id.
+     *
+     * @param string $id
+     */
+    private function locateService($id)
+    {
+        @list($pack, $location, $service) = explode('.', $id);
+
+        if (!isset($this->packs[$pack])) {
+            return false;
+        }
+
+        $serviceClassName = $this->packs[$pack]->getNameSpace()."\\".ucfirst($location)."\\".ucfirst($service);
+
+        $this['pack_register']->registerService($serviceClassName, $this->packs[$pack]);
     }
 
 } 

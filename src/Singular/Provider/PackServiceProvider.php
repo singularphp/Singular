@@ -4,6 +4,7 @@ namespace Singular\Provider;
 
 use Silex\Application;
 use Silex\ServiceProviderInterface;
+use Silex\ControllerProviderInterface;
 
 /**
  * Classe PackServiceProvider, implementa a estrutura básica de um pacote.
@@ -12,7 +13,7 @@ use Silex\ServiceProviderInterface;
  *
  * @package Singular\Provider
  */
-class PackServiceProvider implements ServiceProviderInterface
+class PackServiceProvider implements ServiceProviderInterface, ControllerProviderInterface
 {
     /**
      * @var string
@@ -22,12 +23,21 @@ class PackServiceProvider implements ServiceProviderInterface
     /**
      * @param Application $app
      */
-    public function register(Application $app){}
+    public function register(Application $app)
+    {
+        $pack = $this->pack;
+        $app['packs'][$pack] = $this;
+    }
 
     /**
      * @param Application $app
      */
     public function boot(Application $app){}
+
+    /**
+     * @param Application $app
+     */
+    public function connect(Application $app){}
 
     /**
      * Retorna o shortname do pacote.

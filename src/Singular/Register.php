@@ -5,11 +5,14 @@ use Singular\Annotation\Controller;
 use Singular\Annotation\Service;
 use Singular\Provider\PackServiceProvider;
 use \ReflectionClass;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Singular\Register\ControllerRegister;
 use Singular\Register\ServiceRegister;
+//use Doctrine\Common\Annotations\CachedReader;
+//use Doctrine\Common\Cache\ApcCache;
 
 /**
  * Classe Register, registra serviços do pacote.
@@ -29,6 +32,7 @@ class Register
     {
         AnnotationRegistry::registerAutoloadNamespace("Singular\Annotation", __DIR__."/../");
 
+        $this->app = $app;
         $this->ctrlRegister = new ControllerRegister($app);
         $this->servRegister = new ServiceRegister($app);
     }
@@ -42,20 +46,66 @@ class Register
     {
         $reflector = new ReflectionClass(get_class($pack));
         $packDir = dirname($reflector->getFileName());
+        $ctrlDir = $packDir."/Controller";
         $namespace = $reflector->getNamespaceName();
 
+        $fs = new Filesystem();
         $finder = new Finder();
 
-        foreach ($finder->in($packDir)->files() as $file) {
+        if ($fs->exists($ctrlDir)) {
+            foreach ($finder->in($ctrlDir)->files() as $file) {
 
-            $className = str_replace(".".$file->getExtension(), '', $file->getRelativePathname());
-            $fullClassName = $namespace."\\".str_replace("/","\\",$className);
+                $className = str_replace(".".$file->getExtension(), '', $file->getRelativePathname());
+                $fullClassName = $namespace."\\Controller\\".str_replace("/","\\",$className);
 
-            if (class_exists($fullClassName)) {
-                $this->readAnnotations($fullClassName, $pack);
+                if (class_exists($fullClassName)) {
+                    $this->readAnnotations($fullClassName, $pack);
+                }
             }
         }
     }
+
+    /**
+     * Registra um serviço.
+     *
+     * @param string $serviceClassName
+     * @param PackServiceProvider $pack
+     */
+    public function registerService($serviceClassName, $pack)
+    {
+        $reader = new AnnotationReader();
+
+        $reflectionClass = new \ReflectionClass($serviceClassName);
+        $classAnnotations = $reader->getClassAnnotations($reflectionClass);
+
+        foreach ($classAnnotations as $annotation) {
+            if ($annotation instanceof Service) {
+                $this->servRegister->register($annotation, $reflectionClass, $pack);
+            }
+        }
+
+    }
+
+    /**
+     * Registra um controlador.
+     *
+     * @param string $controllerClassName
+     * @param PackServiceProvider $pack
+     */
+    public function registerController($controllerClassName, $pack)
+    {
+        $reader = new AnnotationReader();
+
+        $reflectionClass = new \ReflectionClass($controllerClassName);
+        $classAnnotations = $reader->getClassAnnotations($reflectionClass);
+
+        foreach ($classAnnotations as $annotation) {
+            if ($annotation instanceof Controller) {
+                $this->ctrlRegister->register($annotation, $reflectionClass, $pack);
+            }
+        }
+    }
+
 
     /**
      * Extrái as anotações da classe e registra controladores ou serviços.
@@ -73,8 +123,6 @@ class Register
         foreach ($classAnnotations as $annotation) {
             if ($annotation instanceof Controller) {
                 $this->ctrlRegister->register($annotation, $reflectionClass, $pack);
-            } elseif ($annotation instanceof Service) {
-                $this->servRegister->register($annotation, $reflectionClass, $pack);
             }
         }
 
