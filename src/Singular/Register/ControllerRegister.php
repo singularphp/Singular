@@ -154,6 +154,12 @@ class ControllerRegister
         if ($annotation->method != null || !empty($annotation->methods)) {
 
             $routeMethods = $annotation->method == null ? $annotation->methods : array($annotation->method);
+            
+            if (isset($app['cors.enabled'])) {
+                if ($app['cors.enabled']) {
+                    $routeMethods[] = 'options';
+                }
+            }
 
             if ($annotation->pattern) {
 
