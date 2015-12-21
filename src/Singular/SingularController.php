@@ -23,7 +23,7 @@ class SingularController extends SingularService
      *
      * @var string
      */
-    protected $defaultStore = '';
+    protected $store = '';
 
     /**
      * Inicializa o controlador definindo sua associação com a aplicação e o pacote onde foi criado.
@@ -46,11 +46,11 @@ class SingularController extends SingularService
      */
     protected function getStore()
     {
-        if (!$this->defaultStore) {
-            $this->defaultStore = $this->getServiceName();
+        if (!$this->store) {
+            $this->store = $this->getServiceName();
         }
 
-        $storeService = $this->pack.".store.".$this->defaultStore;
+        $storeService = $this->pack.".store.".$this->store;
 
         if (!isset($this->app[$storeService])) {
             throw new \Exception("O store ".$storeService." não foi registrado na aplicação!");

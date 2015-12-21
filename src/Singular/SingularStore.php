@@ -2,7 +2,8 @@
 
 namespace Singular;
 
-use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\Connection;
+use Doctrine\DBAL\Query\QueryBuilder;
 
 /**
  * Classe do store básico da aplicação.
@@ -67,7 +68,7 @@ class SingularStore extends SingularService
     /**
      * Localiza um registro pelo seu id.
      *
-     * @param Integer $id
+     * @param integer $id
      *
      * @return Array
      */
@@ -87,9 +88,9 @@ class SingularStore extends SingularService
     /**
      * Localiza o primeiro registro que casa com um conjunto de filtros.
      *
-     * @param Array $filters
+     * @param array $filters
      *
-     * @return Array
+     * @return array
      */
     public function findOneBy($filters)
     {
@@ -99,11 +100,7 @@ class SingularStore extends SingularService
             ->from($this->table, 't')
             ->where('1 = 1');
 
-        foreach ($filters as $key => $filter) {
-            $filters[$key] = "%$filter%";
-            $qb->andWhere('t.'.$key.' like :'.$key);
-        }
-
+        $filters = $this->addFilter($qb, $filters);
 
         return $this->db->fetchAssoc($qb->getSQL(), $filters);
     }
@@ -111,12 +108,13 @@ class SingularStore extends SingularService
     /**
      * Localiza os registros que casam com um conjunto de filtros.
      *
-     * @param Array $filters
-     * @param Array $opt
+     * @param array $filters
+     * @param array $pageOpts
+     * @param array $sort
      *
-     * @return Array
+     * @return array
      */
-    public function findBy($filters, $opt = array())
+    public function findBy($filters, $pageOpts = array(), $sort = array())
     {
         $qb = $this->db->createQueryBuilder();
 
@@ -124,12 +122,31 @@ class SingularStore extends SingularService
             ->from($this->table, 't')
             ->where('1 = 1');
 
-        foreach ($filters as $key => $filter) {
-            $filters[$key] = "%$filter%";
-            $qb->andWhere('t.'.$key.' like :'.$key);
-        }
+        $filters = $this->addFilter($qb, $filters);
+        $this->addSort($qb, $sort);
 
-        return $this->paginate($qb, $opt, $filters);
+        return $this->paginate($qb, $pageOpts, $filters);
+    }
+
+    /**
+     * Localiza todos os registros da tabela.
+     *
+     * @param array $pageOpts
+     * @param array $sort
+     *
+     * @return array
+     */
+    public function findAll($pageOpts = array(), $sort = array())
+    {
+        $qb = $this->db->createQueryBuilder();
+
+        $qb->select('t.*')
+            ->from($this->table,'t')
+            ->where('1 = 1');
+
+        $this->addSort($qb, $sort);
+
+        return $this->paginate($qb, $pageOpts);
     }
 
     /**
@@ -156,7 +173,7 @@ class SingularStore extends SingularService
 
                 $id = $this->db->lastInsertId($this->id);
             } catch (\Exception $e) {
-                die($e->getMessage());
+                throw $e;
             }
 
         } else {
@@ -168,6 +185,7 @@ class SingularStore extends SingularService
                 $id = $data[$this->id];
 
             } catch (\Exception $e) {
+                throw $e;
             }
         }
 
@@ -213,6 +231,19 @@ class SingularStore extends SingularService
     }
 
     /**
+     * Adiciona parâmetros de ordenação ao QueryBuilder.
+     *
+     * @param QueryBuilder $qb
+     * @param array        $sort
+     */
+    protected function addSort($qb, $sort)
+    {
+        foreach ($sort as $property => $direction) {
+            $qb->addOrderBy($property, $direction);
+        }
+    }
+
+    /**
      * Pagina o resultado de uma consulta.
      *
      * @param QueryBuilder $qb
@@ -227,8 +258,10 @@ class SingularStore extends SingularService
 
         $total = count($db->fetchAll($qb->getSQL(), $filters));
 
-        $qb->setFirstResult(isset($pageOpts['start']) ? $pageOpts['start'] : 0)->
+        if (isset($pageOpts['start'])) {
+            $qb->setFirstResult(isset($pageOpts['start']) ? $pageOpts['start'] : 0)->
             setMaxResults(isset($pageOpts['limit']) ? $pageOpts['limit'] : 200);
+        }
 
         $result = $db->fetchAll($qb->getSQL(), $filters);
 
@@ -236,6 +269,40 @@ class SingularStore extends SingularService
             'total' => $total,
             'results' => $result
         );
+    }
+
+    /**
+     * Adiciona os filtros ao query builder.
+     *
+     * @param QueryBuilder $qb
+     * @param array $filters
+     *
+     * @return array
+     */
+    protected function addFilter($qb, $filters)
+    {
+        foreach ($filters as $key => $filter) {
+            $params = explode(':',$filter);
+
+            if (count($params) == 1) {
+                array_unshift($params, 'like');
+            }
+
+            switch ($params[0]) {
+                case 'like':
+                    $filters[$key] = "%$filter%";
+                    $qb->andWhere('t.'.$key.' like :'.$key);//@todo: referência "t"
+                    break;
+                default:
+                    $filters[$key] = $filter;
+                    $qb->andWhere('t.'.$key.' '.$params[0].' :'.$key);
+                    break;
+            }
+
+
+        }
+
+        return $filters;
     }
 
     /**
@@ -346,7 +413,7 @@ class SingularStore extends SingularService
      *
      * @return Array
      */
-    private function getColumnNames()
+    protected function getColumnNames()
     {
         $names = array();
         $columns = $this->db->getSchemaManager()->listTableColumns($this->table);
@@ -363,7 +430,7 @@ class SingularStore extends SingularService
      *
      * @return Connection
      */
-    private function getConnection()
+    protected function getConnection()
     {
         if ('default' == $this->conn) {
             return $this->app['db'];
