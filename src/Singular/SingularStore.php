@@ -288,6 +288,8 @@ class SingularStore extends SingularService
                 array_unshift($params, 'like');
             }
 
+            $filter = $params[1];
+
             switch ($params[0]) {
                 case 'like':
                     $filters[$key] = "%$filter%";
