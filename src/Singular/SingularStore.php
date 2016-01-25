@@ -29,6 +29,13 @@ class SingularStore extends SingularService
     protected $id = 'id';
 
     /**
+     * Campo utilizado para definição do nome da sequence da tabela.
+     *
+     * @var string
+     */
+    protected $sequence = null;
+
+    /**
      * Nome da conexão default.
      *
      * @var string
@@ -39,6 +46,18 @@ class SingularStore extends SingularService
      * @var \Doctrine\DBAL\Driver\Connection
      */
     protected $db;
+
+    /**
+     * @var array
+     */
+    protected $select = array();
+
+    /**
+     * Lista de joins.
+     *
+     * @var array
+     */
+    protected $joins = array();
 
     /**
      * Inicializa o Store.
@@ -78,7 +97,10 @@ class SingularStore extends SingularService
 
         $qb->select('t.*')
             ->from($this->table, 't')
-            ->where($this->id." = :id");
+            ->where('t.'.$this->id." = :id");
+
+        $qb->addSelect($this->select);
+        $this->addJoin($qb);
 
         return $this->db->fetchAssoc($qb->getSQL(), array(
             'id' => $id
@@ -99,6 +121,9 @@ class SingularStore extends SingularService
         $qb->select('t.*')
             ->from($this->table, 't')
             ->where('1 = 1');
+
+        $qb->addSelect($this->select);
+        $this->addJoin($qb);
 
         $filters = $this->addFilter($qb, $filters);
 
@@ -122,6 +147,9 @@ class SingularStore extends SingularService
             ->from($this->table, 't')
             ->where('1 = 1');
 
+        $qb->addSelect($this->select);
+        $this->addJoin($qb);
+
         $filters = $this->addFilter($qb, $filters);
         $this->addSort($qb, $sort);
 
@@ -143,6 +171,9 @@ class SingularStore extends SingularService
         $qb->select('t.*')
             ->from($this->table,'t')
             ->where('1 = 1');
+
+        $qb->addSelect($this->select);
+        $this->addJoin($qb);
 
         $this->addSort($qb, $sort);
 
@@ -171,7 +202,12 @@ class SingularStore extends SingularService
 
                 $this->db->insert($this->table, $this->fromArray($data));
 
-                $id = $this->db->lastInsertId($this->id);
+                if ($this->sequence){
+                    $id = $this->db->lastInsertId($this->sequence);
+                } else {
+                    $id = $this->db->lastInsertId($this->id);
+                }
+
             } catch (\Exception $e) {
                 throw $e;
             }
@@ -281,6 +317,8 @@ class SingularStore extends SingularService
      */
     protected function addFilter($qb, $filters)
     {
+        $sgbd = isset($this->app['dbms']) ? $this->app['dbms'] : 'mysql';
+
         foreach ($filters as $key => $filter) {
             $params = explode(':',$filter);
 
@@ -293,7 +331,13 @@ class SingularStore extends SingularService
             switch ($params[0]) {
                 case 'like':
                     $filters[$key] = "%$filter%";
-                    $qb->andWhere('t.'.$key.' like :'.$key);//@todo: referência "t"
+
+                    if ($sgbd == 'postgres'){
+                        $qb->andWhere('t.'.$key.' ilike :'.$key);
+                    } else {
+                        $qb->andWhere('t.'.$key.' like :'.$key);
+                    }
+
                     break;
                 default:
                     $filters[$key] = $filter;
@@ -305,6 +349,27 @@ class SingularStore extends SingularService
         }
 
         return $filters;
+    }
+
+    /**
+     * Adiciona joins à consulta.
+     *
+     * @param QueryBuilder $qb
+     */
+    protected function addJoin($qb)
+    {
+        foreach ($this->joins as $join) {
+
+            if (!isset($join['type'])) {
+                $join['type'] = 'join';
+            }
+
+            if ($join['type'] == 'left') {
+                $qb->leftJoin('t',$join['table'], $join['alias'], $join['condition']);
+            } else {
+                $qb->join('t',$join['table'], $join['alias'], $join['condition']);
+            }
+        }
     }
 
     /**

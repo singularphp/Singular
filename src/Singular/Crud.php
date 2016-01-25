@@ -15,23 +15,6 @@ use Singular\Response\JsonResponse;
 trait Crud
 {
     /**
-     * Parâmetros de ordenação default.
-     *
-     * @var array
-     */
-    protected $sort = array();
-
-    /**
-     * Parâmetros de paginação default.
-     *
-     * @var array
-     */
-    protected $paging = array(
-        'start' => 0,
-        'limit' => 200
-    );
-
-    /**
      * Função responsável por retornar a listagem de todos os registros de uma tabela.
      *
      * @Route(method="post")
@@ -67,15 +50,36 @@ trait Crud
 
         $store = $this->getStore();
 
-        $filters = $request->get('filters', $this->getBaseFilters());
+        $filters = $request->get('filter', $this->getBaseFilters());
         $paging = $request->get('paging', $this->paging);
         $sort = $request->get('sort', $this->sort);
 
+        $data = $store->findBy($filters, $paging, $sort);
+        $data['success'] = true;
+
+        return $app->json($data);
+    }
+
+    /**
+     * Função responsável por retornar um único registro.
+     *
+     * @Route(method="post")
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse
+     */
+    public function get(Request $request)
+    {
+        $app = $this->app;
+
+        // @var Store
+        $store = $this->getStore();
+
         return $app->json(array(
             'success' => true,
-            'results' => $store->findBy($filters, $paging, $sort)
+            'result' => $store->find($request->get('id'))
         ));
-
     }
 
     /**

@@ -26,6 +26,23 @@ class SingularController extends SingularService
     protected $store = '';
 
     /**
+     * Parâmetros de ordenação default.
+     *
+     * @var array
+     */
+    protected $sort = array();
+
+    /**
+     * Parâmetros de paginação default.
+     *
+     * @var array
+     */
+    protected $paging = array(
+        'start' => 0,
+        'limit' => 200
+    );
+
+    /**
      * Inicializa o controlador definindo sua associação com a aplicação e o pacote onde foi criado.
      *
      * @param Application $app
@@ -50,9 +67,9 @@ class SingularController extends SingularService
             $this->store = $this->getServiceName();
         }
 
-        $storeService = $this->pack.".store.".$this->store;
+        $storeService = $this->pack->getPackName().".store.".$this->store;
 
-        if (!isset($this->app[$storeService])) {
+        if (!$this->app[$storeService]) {
             throw new \Exception("O store ".$storeService." não foi registrado na aplicação!");
         }
 
@@ -87,6 +104,14 @@ class SingularController extends SingularService
         $reflector = new \ReflectionClass($this);
 
         return strtolower($reflector->getShortName());
+    }
+
+    /**
+     * Retorna os filtros básicos do store
+     */
+    protected function getBaseFilters()
+    {
+        return array();
     }
 
     /**
