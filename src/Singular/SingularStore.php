@@ -9,7 +9,7 @@ use Doctrine\DBAL\Query\QueryBuilder;
  * Classe do store básico da aplicação.
  *
  * @author Otávio Fernandes <otavio@netonsolucoes.com.br>
- * 
+ *
  * @package Singular
  */
 class SingularStore extends SingularService
@@ -485,6 +485,11 @@ class SingularStore extends SingularService
         $names = array();
         $columns = $this->db->getSchemaManager()->listTableColumns($this->table);
 
+        if (count($columns) == 0) {
+            $fullTable = $this->schema ?: $this->app['db_schema'];
+            $columns = $this->db->getSchemaManager()->listTableColumns($fullTable);
+        }
+
         foreach ($columns as $column) {
             $names[] = $column->getName();
         }
@@ -505,4 +510,4 @@ class SingularStore extends SingularService
             return $this->app['dbs'][$this->conn];
         }
     }
-} 
+}
