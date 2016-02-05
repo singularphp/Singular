@@ -486,7 +486,8 @@ class SingularStore extends SingularService
         $columns = $this->db->getSchemaManager()->listTableColumns($this->table);
 
         if (count($columns) == 0) {
-            $fullTable = $this->schema ?: $this->app['db_schema'];
+            $schema = $this->schema ?: $this->app['db.schema'];
+            $fullTable = $schema.".".$this->table;
             $columns = $this->db->getSchemaManager()->listTableColumns($fullTable);
         }
 
@@ -510,4 +511,4 @@ class SingularStore extends SingularService
             return $this->app['dbs'][$this->conn];
         }
     }
-}
+} 
