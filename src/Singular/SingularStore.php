@@ -60,6 +60,13 @@ class SingularStore extends SingularService
     protected $joins = array();
 
     /**
+     * Lista de condições padrão.
+     *
+     * @var array
+     */
+    protected $wheres = array();
+
+    /**
      * Inicializa o Store.
      *
      * @param Application $app
@@ -101,6 +108,7 @@ class SingularStore extends SingularService
 
         $qb->addSelect($this->select);
         $this->addJoin($qb);
+        $this->addWhere($qb);
 
         return $this->db->fetchAssoc($qb->getSQL(), array(
             'id' => $id
@@ -124,6 +132,7 @@ class SingularStore extends SingularService
 
         $qb->addSelect($this->select);
         $this->addJoin($qb);
+        $this->addWhere($qb);
 
         $filters = $this->addFilter($qb, $filters);
 
@@ -149,6 +158,7 @@ class SingularStore extends SingularService
 
         $qb->addSelect($this->select);
         $this->addJoin($qb);
+        $this->addWhere($qb);
 
         $filters = $this->addFilter($qb, $filters);
         $this->addSort($qb, $sort);
@@ -174,6 +184,7 @@ class SingularStore extends SingularService
 
         $qb->addSelect($this->select);
         $this->addJoin($qb);
+        $this->addWhere($qb);
 
         $this->addSort($qb, $sort);
 
@@ -320,6 +331,10 @@ class SingularStore extends SingularService
         $sgbd = isset($this->app['dbms']) ? $this->app['dbms'] : 'mysql';
 
         foreach ($filters as $key => $filter) {
+            if (strpos($key, '.') === false){
+                $keyAlias = "t.".$key;
+            }
+
             $params = explode(':',$filter);
 
             if (count($params) == 1) {
@@ -333,15 +348,15 @@ class SingularStore extends SingularService
                     $filters[$key] = "%$filter%";
 
                     if ($sgbd == 'postgres'){
-                        $qb->andWhere('t.'.$key.' ilike :'.$key);
+                        $qb->andWhere($keyAlias.' ilike :'.$key);
                     } else {
-                        $qb->andWhere('t.'.$key.' like :'.$key);
+                        $qb->andWhere($keyAlias.' like :'.$key);
                     }
 
                     break;
                 default:
                     $filters[$key] = $filter;
-                    $qb->andWhere('t.'.$key.' '.$params[0].' :'.$key);
+                    $qb->andWhere($keyAlias.' '.$params[0].' :'.$key);
                     break;
             }
 
@@ -370,6 +385,16 @@ class SingularStore extends SingularService
                 $qb->join('t',$join['table'], $join['alias'], $join['condition']);
             }
         }
+    }
+
+    /**
+     * Adiciona cláusulas where padrão nas consultas.
+     *
+     * @param QueryBuilder $qb
+     */
+    protected function addWhere($qb)
+    {
+        $this->addFilter($qb, $this->wheres);
     }
 
     /**
