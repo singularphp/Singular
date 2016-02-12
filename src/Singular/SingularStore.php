@@ -338,7 +338,9 @@ class SingularStore extends SingularService
             $params = explode(':',$filter);
 
             if (count($params) == 1) {
-                array_unshift($params, 'like');
+                if (!in_array($filter, array('isnull','isnotnull'))){
+                    array_unshift($params, 'like');
+                }
             }
 
             $filter = $params[1];
@@ -353,6 +355,12 @@ class SingularStore extends SingularService
                         $qb->andWhere($keyAlias.' like :'.$key);
                     }
 
+                    break;
+                case 'isnull':
+                    $qb->andWhere($keyAlias.'  IS NULL');
+                    break;
+                case 'isnotnull':
+                    $qb->andWhere($keyAlias.'  IS NOT NULL');
                     break;
                 default:
                     $filters[$key] = $filter;
