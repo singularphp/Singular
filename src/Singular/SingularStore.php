@@ -343,6 +343,8 @@ class SingularStore extends SingularService
         foreach ($filters as $key => $filter) {
             if (strpos($key, '.') === false){
                 $keyAlias = "t.".$key;
+            } else {
+                $keyAlias = $key;
             }
 
             $params = explode(':',$filter);
