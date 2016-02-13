@@ -345,6 +345,7 @@ class SingularStore extends SingularService
                 $keyAlias = "t.".$key;
             } else {
                 $keyAlias = $key;
+                $key = str_replace('.','_',$key);
             }
 
             $params = explode(':',$filter);
