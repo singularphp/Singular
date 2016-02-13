@@ -92,6 +92,16 @@ class SingularStore extends SingularService
     }
 
     /**
+     * Adiciona condições nas cláusulas where.
+     *
+     * @param array $list
+     */
+    public function addClauses($list)
+    {
+        $this->wheres = array_merge($this->wheres, $list);
+    }
+
+    /**
      * Localiza um registro pelo seu id.
      *
      * @param integer $id
@@ -338,7 +348,7 @@ class SingularStore extends SingularService
             $params = explode(':',$filter);
 
             if (count($params) == 1) {
-                if (!in_array($filter, array('isnull','isnotnull'))){
+                if (!in_array($filter, array('isnull','isnotnull','in','notin'))){
                     array_unshift($params, 'like');
                 }
             }
@@ -355,6 +365,12 @@ class SingularStore extends SingularService
                         $qb->andWhere($keyAlias.' like :'.$key);
                     }
 
+                    break;
+                case 'in':
+                    $qb->andWhere($keyAlias.' IN ('.$filter.')');
+                    break;
+                case 'notin':
+                    $qb->andWhere($keyAlias.' NOT IN ('.$filter.')');
                     break;
                 case 'isnull':
                     $qb->andWhere($keyAlias.'  IS NULL');
