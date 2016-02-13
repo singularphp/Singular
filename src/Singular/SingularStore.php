@@ -356,6 +356,10 @@ class SingularStore extends SingularService
                 if (!in_array($filter, array('isnull','isnotnull','in','notin'))){
                     array_unshift($params, 'like');
                 }
+
+                if (in_array($filter, array('isnull','isnotnull'))){
+                    array_unshift($params, $filter);
+                }
             }
 
             $filter = $params[1];
