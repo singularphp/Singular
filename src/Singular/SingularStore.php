@@ -67,6 +67,13 @@ class SingularStore extends SingularService
     protected $wheres = array();
 
     /**
+     * Lista de groupBy da cláusula sql.
+     *
+     * @var array
+     */
+    protected $groupBy = array();
+
+    /**
      * Inicializa o Store.
      *
      * @param Application $app
@@ -119,6 +126,7 @@ class SingularStore extends SingularService
         $qb->addSelect($this->select);
         $this->addJoin($qb);
         $this->addWhere($qb);
+        $this->addGroupBy($qb);
 
         return $this->db->fetchAssoc($qb->getSQL(), array(
             'id' => $id
@@ -169,6 +177,7 @@ class SingularStore extends SingularService
         $qb->addSelect($this->select);
         $this->addJoin($qb);
         $this->addWhere($qb);
+        $this->addGroupBy($qb);
 
         $filters = $this->addFilter($qb, $filters);
         $this->addSort($qb, $sort);
@@ -195,6 +204,7 @@ class SingularStore extends SingularService
         $qb->addSelect($this->select);
         $this->addJoin($qb);
         $this->addWhere($qb);
+        $this->addGroupBy($qb);
 
         $this->addSort($qb, $sort);
 
@@ -417,6 +427,18 @@ class SingularStore extends SingularService
             } else {
                 $qb->join('t',$join['table'], $join['alias'], $join['condition']);
             }
+        }
+    }
+
+    /**
+     * Adiciona groupby à consulta.
+     *
+     * @param QueryBuilder $qb
+     */
+    protected function addGroupBy($qb)
+    {
+        foreach ($this->groupBy as $group) {
+            $qb->addGroupBy($group);
         }
     }
 
