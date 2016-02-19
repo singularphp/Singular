@@ -48,6 +48,11 @@ class SingularStore extends SingularService
     protected $db;
 
     /**
+     * @var string
+     */
+    protected $defaultSelect = 't.*';
+
+    /**
      * @var null
      */
     protected $distinct = null;
@@ -124,7 +129,7 @@ class SingularStore extends SingularService
     {
         $qb = $this->db->createQueryBuilder();
 
-        $qb->select('t.*')
+        $qb->select($this->defaultSelect)
             ->from($this->table, 't')
             ->where('t.'.$this->id." = :id");
 
@@ -149,7 +154,7 @@ class SingularStore extends SingularService
     {
         $qb = $this->db->createQueryBuilder();
 
-        $qb->select('t.*')
+        $qb->select($this->defaultSelect)
             ->from($this->table, 't')
             ->where('1 = 1');
 
@@ -177,7 +182,10 @@ class SingularStore extends SingularService
 
         if ($this->distinct) {
             $qb->select(' DISTINCT '.$this->distinct);
-            $qb->addSelect('t.*');
+
+            if ($this->defaultSelect) {
+                $qb->addSelect($this->defaultSelect);
+            }
         } else {
             $qb->select('t.*');
         }
@@ -210,7 +218,10 @@ class SingularStore extends SingularService
 
         if ($this->distinct) {
             $qb->select(' DISTINCT '.$this->distinct);
-            $qb->addSelect('t.*');
+
+            if ($this->defaultSelect) {
+                $qb->addSelect($this->defaultSelect);
+            }
         } else {
             $qb->select('t.*');
         }
