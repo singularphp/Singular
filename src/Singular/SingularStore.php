@@ -248,8 +248,6 @@ class SingularStore extends SingularService
      */
     public function save($data)
     {
-        $id = false;
-
         if (!isset($data[$this->id])) {
             $data[$this->id] = 0;
         }
@@ -257,31 +255,14 @@ class SingularStore extends SingularService
         if ($data[$this->id] == 0) {
             unset($data[$this->id]);
 
-            try {
-
-                $this->db->insert($this->table, $this->fromArray($data));
-
-                if ($this->sequence){
-                    $id = $this->db->lastInsertId($this->sequence);
-                } else {
-                    $id = $this->db->lastInsertId($this->id);
-                }
-
-            } catch (\Exception $e) {
-                throw $e;
-            }
-
+            $id = $this->insert($data);
         } else {
-            try {
-                $this->db->update($this->table, $this->fromArray($data), array(
-                    $this->id => $data[$this->id]
-                ));
-
-                $id = $data[$this->id];
-
-            } catch (\Exception $e) {
-                throw $e;
+            if ($this->find($data[$this->id])) {
+                $id = $this->update($data);
+            } else {
+                $id = $this->insert($data);
             }
+
         }
 
         return $id;
@@ -323,6 +304,55 @@ class SingularStore extends SingularService
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    /**
+     * Insere um novo registro na tabela.
+     *
+     * @param array $data
+     *
+     * @return Mixed
+     */
+    protected function insert($data)
+    {
+        try {
+
+            $this->db->insert($this->table, $this->fromArray($data));
+
+            if ($this->sequence){
+                $id = $this->db->lastInsertId($this->sequence);
+            } else {
+                $id = $this->db->lastInsertId($this->id);
+            }
+
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
+        return $id;
+    }
+
+    /**
+     * Atualiza um registro na tabela.
+     *
+     * @param array $data
+     * @return mixed
+     * @throws \Exception
+     */
+    protected function update($data)
+    {
+        try {
+            $this->db->update($this->table, $this->fromArray($data), array(
+                $this->id => $data[$this->id]
+            ));
+
+            $id = $data[$this->id];
+
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
+        return $id;
     }
 
     /**
