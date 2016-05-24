@@ -252,7 +252,7 @@ class SingularStore extends SingularService
             $data[$this->id] = 0;
         }
 
-        if ($data[$this->id] == 0) {
+        if (0 === $data[$this->id]) {
             unset($data[$this->id]);
 
             $id = $this->insert($data);
