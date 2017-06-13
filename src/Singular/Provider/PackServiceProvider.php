@@ -3,8 +3,10 @@
 namespace Singular\Provider;
 
 use Silex\Application;
-use Silex\ServiceProviderInterface;
-use Silex\ControllerProviderInterface;
+use Pimple\Container;
+use Pimple\ServiceProviderInterface;
+use Silex\Api\ControllerProviderInterface;
+use Singular\Annotation\Controller;
 
 /**
  * Classe PackServiceProvider, implementa a estrutura básica de um pacote.
@@ -23,10 +25,8 @@ class PackServiceProvider implements ServiceProviderInterface, ControllerProvide
     /**
      * @param Application $app
      */
-    public function register(Application $app)
+    public function register(Container $app)
     {
-        $pack = $this->pack;
-        $app['packs'][$pack] = $this;
     }
 
     /**

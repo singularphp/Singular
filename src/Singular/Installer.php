@@ -2,7 +2,6 @@
 
 namespace Singular\Service;
 
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -10,7 +9,6 @@ use Symfony\Component\Filesystem\Filesystem;
  *
  * Classe responsável pela instalação do Singular na aplicação.
  *
- * @package Singular\Service
  *
  * @author Otávio Fernandes <otavio@netonsolucoes.com.br>
  */
@@ -19,14 +17,14 @@ class Installer
     /**
      * Diretório base da aplicação.
      *
-     * @var $baseDir
+     * @var
      */
     protected $baseDir;
 
     /**
      * Inicializa o instalador do singular.
      *
-     * @param String $baseDir
+     * @param string $baseDir
      */
     public function __construct($baseDir)
     {
@@ -36,7 +34,7 @@ class Installer
     /**
      * Instala a aplicação Singular.
      *
-     * @param Boolean $override
+     * @param bool $override
      */
     public function install($override)
     {
@@ -48,41 +46,40 @@ class Installer
     {
         $fs = new Filesystem();
 
-        if (!$fs->exists($this->baseDir."/web")) {
-            $fs->mkdir($this->baseDir."/web");
-            $fs->mkdir($this->baseDir."/web/src");
-            $fs->mkdir($this->baseDir."/web/assets");
-            $fs->mkdir($this->baseDir."/web/assets/styles");
-            $fs->mkdir($this->baseDir."/web/assets/vendor");
-            $fs->mkdir($this->baseDir."/web/assets/fonts");
+        if (!$fs->exists($this->baseDir.'/web')) {
+            $fs->mkdir($this->baseDir.'/web');
+            $fs->mkdir($this->baseDir.'/web/src');
+            $fs->mkdir($this->baseDir.'/web/assets');
+            $fs->mkdir($this->baseDir.'/web/assets/styles');
+            $fs->mkdir($this->baseDir.'/web/assets/vendor');
+            $fs->mkdir($this->baseDir.'/web/assets/fonts');
         }
 
-        if (!$fs->exists($this->baseDir."/src")) {
-            $fs->mkdir($this->baseDir."/src");
+        if (!$fs->exists($this->baseDir.'/src')) {
+            $fs->mkdir($this->baseDir.'/src');
         }
-
-
     }
 
     /**
      * Copia os ativos da interface de usuário para o diretório público da aplicação.
      *
-     * @param Boolean $override
+     * @param bool $override
+     *
      * @todo Tornar o diretório web configurável
      */
     private function installAssets($override)
     {
         $fs = new Filesystem();
 
-        $fs->mirror(__DIR__."/../Resources/public/", $this->baseDir."/web/singular-ui/");
+        $fs->mirror(__DIR__.'/../Resources/public/', $this->baseDir.'/web/singular-ui/');
 
-        $fs->copy(__DIR__."/../Crud/tpl/app.tpl.js", $this->baseDir."/web/src/app.js", $override);
+        $fs->copy(__DIR__.'/../Crud/tpl/app.tpl.js', $this->baseDir.'/web/src/app.js', $override);
     }
 
     /**
      * Copia as views do singular para o diretório de views da aplicação.
      *
-     * @param Boolean $override
+     * @param bool $override
      *
      * @todo Tornar o diretório de views configurável.
      */
@@ -90,8 +87,8 @@ class Installer
     {
         $fs = new Filesystem();
 
-        $fs->mirror(__DIR__."/../Resources/views/", $this->baseDir."/views/singular", null, array(
-                'override' => $override
+        $fs->mirror(__DIR__.'/../Resources/views/', $this->baseDir.'/views/singular', null, array(
+                'override' => $override,
             ));
     }
 }

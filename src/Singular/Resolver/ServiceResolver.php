@@ -1,28 +1,27 @@
 <?php
-namespace Singular\Register;
 
+namespace Singular\Resolver;
 
-use Doctrine\Common\Annotations\Annotation;
 use Doctrine\Common\Annotations\AnnotationReader;
+use Pimple\Container;
 use Singular\Annotation\Service;
 use Singular\Provider\PackServiceProvider;
 use Singular\Application;
 
 /**
- * Class ServiceRegister
+ * Class ServiceRegister.
  *
- * @package Singular
  *
  * @author Otávio Fernandes <otavio@netonsolucoes.com.br>
  */
-class ServiceRegister
+class ServiceResolver
 {
     /**
      * Registra o container de dependência.
      *
      * @param Application $app
      */
-    public function __construct(Application $app)
+    public function __construct(Container $app)
     {
         $this->app = $app;
         $this->reader = new AnnotationReader();
@@ -31,27 +30,27 @@ class ServiceRegister
     /**
      * Registra os serviços do pacote.
      *
-     * @param Service               $annotation
-     * @param \ReflectionClass      $reflectionClass
-     * @param PackServiceProvider   $pack
+     * @param Service             $annotation
+     * @param \ReflectionClass    $reflectionClass
+     * @param PackServiceProvider $pack
      */
-    public function register($annotation, $reflectionClass, $pack)
+    public function resolve($annotation, $reflectionClass, $pack)
     {
         $app = $this->app;
-        $relativeNamespace = preg_replace('/'.$pack->getNameSpace().'/', '', $reflectionClass->getName(),1);
-        $serviceKey = $pack->getPackName().strtolower(implode('.',explode('\\',$relativeNamespace)));
+        $relativeNamespace = preg_replace('/'.$pack->getNameSpace().'/', '', $reflectionClass->getName(), 1);
+        $serviceKey = $pack->getPackName().strtolower(implode('.', explode('\\', $relativeNamespace)));
         $class = $reflectionClass->getName();
 
         switch ($annotation->type) {
-            case 'clousure':
+            case 'factory':
+                $app[$serviceKey] = $app->factory(function () use ($class, $app, $pack) {
+                    return new $class($app, $pack);
+                });
+            break;
+            case 'shared':
                 $app[$serviceKey] = function () use ($class, $app, $pack) {
                     return new $class($app, $pack);
                 };
-            break;
-            case 'shared':
-                $app[$serviceKey] = $app->share(function () use ($class, $app, $pack) {
-                    return new $class($app, $pack);
-                });
             break;
             case 'protected':
                 $app[$serviceKey] = $app->protect(function () use ($class, $app, $pack) {
@@ -66,8 +65,8 @@ class ServiceRegister
     /**
      * Registra parâmetros definidos dentro dos serviços.
      *
-     * @param \ReflectionClass  $reflectionClass
-     * @param string            $serviceKey
+     * @param \ReflectionClass $reflectionClass
+     * @param string           $serviceKey
      */
     public function registerParameters($reflectionClass, $serviceKey)
     {
@@ -76,12 +75,10 @@ class ServiceRegister
         $class = $reflectionClass->getName();
 
         foreach ($properties as $property) {
-
             $annotation = $this->reader->getPropertyAnnotation($property, 'Singular\Annotation\Parameter');
 
             if (!empty($annotation)) {
-
-                $parameterKey = $serviceKey.".".$property->getName();
+                $parameterKey = $serviceKey.'.'.$property->getName();
 
                 $app[$parameterKey] = function () use ($class, $property) {
 
@@ -92,4 +89,4 @@ class ServiceRegister
             }
         }
     }
-} 
+}

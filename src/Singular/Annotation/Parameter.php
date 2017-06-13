@@ -3,9 +3,8 @@
 namespace Singular\Annotation;
 
 /**
- * Class Parameter
+ * Class Parameter.
  *
- * @package SingularAnnotation
  *
  * @Annotation
  * @Target("PROPERTY")

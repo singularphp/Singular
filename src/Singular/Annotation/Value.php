@@ -3,9 +3,8 @@
 namespace Singular\Annotation;
 
 /**
- * Class Value
+ * Class Value.
  *
- * @package Singular\Annotation
  *
  * @Annotation
  */

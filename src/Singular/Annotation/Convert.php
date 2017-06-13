@@ -3,9 +3,8 @@
 namespace Singular\Annotation;
 
 /**
- * Class Convert
+ * Class Convert.
  *
- * @package Singular\Annotation
  *
  * @Annotation
  */

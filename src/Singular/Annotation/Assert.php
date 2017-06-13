@@ -3,9 +3,8 @@
 namespace Singular\Annotation;
 
 /**
- * Class Assert
+ * Class Assert.
  *
- * @package Singular\Annotation
  *
  * @Annotation
  */

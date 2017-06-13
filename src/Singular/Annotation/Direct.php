@@ -3,9 +3,8 @@
 namespace Singular\Annotation;
 
 /**
- * Class Direct
+ * Class Direct.
  *
- * @package Singular\Annotation
  *
  * @Annotation
  * @Target("METHOD")

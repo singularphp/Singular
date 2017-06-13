@@ -53,5 +53,4 @@ class JsonResponse extends BaseJsonResponse
                 return 'Unknown error.';
         }
     }
-
 }

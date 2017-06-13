@@ -9,8 +9,6 @@ use Singular\Response\JsonResponse;
  * Traço da classe CRUD.
  *
  * @author Otávio Fernandes <otavio@netonsolucoes.com.br>
- *
- * @package Singular
  */
 trait Crud
 {
@@ -31,7 +29,7 @@ trait Crud
 
         return $app->json(array(
             'success' => true,
-            'results' => $store->findAll(array(), $request->get('sort', $this->sort))
+            'results' => $store->findAll(array(), $request->get('sort', $this->sort)),
         ));
     }
 
@@ -78,7 +76,7 @@ trait Crud
 
         return $app->json(array(
             'success' => true,
-            'result' => $store->find($request->get('id'))
+            'result' => $store->find($request->get('id')),
         ));
     }
 
@@ -99,7 +97,7 @@ trait Crud
 
         return $app->json(array(
             'success' => true,
-            'record' => $store->save($request->request->all())
+            'record' => $store->save($request->request->all()),
         ));
     }
 
@@ -127,14 +125,13 @@ trait Crud
         $success = true;
 
         foreach ($ids as $idx => $id) {
-            if (!$store->remove($id)){
+            if (!$store->remove($id)) {
                 $success = false;
             }
         }
 
         return $app->json(array(
-            'success' => $success
+            'success' => $success,
         ));
     }
-
 }

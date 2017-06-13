@@ -7,7 +7,6 @@ namespace Singular;
  *
  * Controlador principal de uma aplicação singular.
  *
- * @package Singular
  *
  * @author Otávio Fernandes <otavio@neton.com.br>
  */
@@ -34,15 +33,15 @@ class MainController
     {
         $app = $this->app;
 
-        /**
+        /*
          * Rota que instala os componentes do singular na aplicação.
          *
          * @param Boolean $override se os arquivos de views devem ser sobrescritos
          */
-        $app->get('singular/install/{override}', function($override) use ($app) {
-            $app['singular.installer']->install((boolean)$override);
-            return "Singular instalado";
-        })->value('override', false);
+        $app->get('singular/install/{override}', function ($override) use ($app) {
+            $app['singular.installer']->install((boolean) $override);
 
+            return 'Singular instalado';
+        })->value('override', false);
     }
 }

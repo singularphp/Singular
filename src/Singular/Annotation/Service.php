@@ -3,9 +3,8 @@
 namespace Singular\Annotation;
 
 /**
- * Class Service
+ * Class Service.
  *
- * @package Singular\Annotation
  *
  * @Annotation
  */
@@ -20,5 +19,4 @@ class Service
      * @var string
      */
     public $type = 'shared';
-
 }

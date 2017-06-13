@@ -1,14 +1,13 @@
 <?php
+
 namespace Singular;
 
-use Singular\Application;
+use Pimple\Container;
 use Symfony\Component\Finder\Finder;
 use Igorw\Silex\ConfigServiceProvider;
 
 /**
- * Class ConfigLoader
- *
- * @package Neton
+ * Class ConfigLoader.
  */
 class ConfigLoader
 {
@@ -19,7 +18,7 @@ class ConfigLoader
      *
      * @param Application $app
      */
-    public function __construct($app)
+    public function __construct(Container $app)
     {
         $this->app = $app;
     }
@@ -30,9 +29,9 @@ class ConfigLoader
     public function loadConfigs()
     {
         $app = $this->app;
-        $configDir = $app['base_dir']."/app/config";
+        $configDir = $app['base_dir'].'/app/config';
 
-        if (!is_dir($configDir)){
+        if (!is_dir($configDir)) {
             throw Exception::directoryNotFound('O diretorio "'.$configDir.'" nao foi encontrado!');
         }
 
@@ -52,15 +51,15 @@ class ConfigLoader
         $files = $finder->in($dir)->files()->name('*.json');
 
         foreach ($files as $file) {
-            $filenameParts = explode('.',$file->getFilename());
+            $filenameParts = explode('.', $file->getFilename());
 
-            if (count($filenameParts) >= 3){
-                $env = $filenameParts[count($filenameParts)-2];
+            if (count($filenameParts) >= 3) {
+                $env = $filenameParts[count($filenameParts) - 2];
             } else {
                 $env = false;
             }
 
-            if ($env == false || $env == $this->app['env']){
+            if ($env == false || $env == $this->app['env']) {
                 $json = json_decode(file_get_contents($file->getRealpath()), true);
 
                 $params = null;
@@ -74,14 +73,12 @@ class ConfigLoader
                 $this->files[$cfgIndex] = array(
                     'file' => $file->getRealpath(),
                     '_params' => $params,
-                    '_priority' => isset($json['_priority']) ? $json['_priority'] : 0
+                    '_priority' => isset($json['_priority']) ? $json['_priority'] : 0,
                 );
-
             }
-
         }
 
-        usort($this->files, array($this,'sortByPriority'));
+        usort($this->files, array($this, 'sortByPriority'));
     }
 
     /**
@@ -91,6 +88,7 @@ class ConfigLoader
      *
      * @param $a
      * @param $b
+     *
      * @return int
      */
     private function sortByPriority($a, $b)
@@ -98,8 +96,7 @@ class ConfigLoader
         $a = $a['_priority'];
         $b = $b['_priority'];
 
-        if ($a == $b)
-        {
+        if ($a == $b) {
             return 0;
         }
 
@@ -111,11 +108,11 @@ class ConfigLoader
      */
     private function registerConfigs()
     {
-        foreach ($this->files as $config){
+        foreach ($this->files as $config) {
             $params = array();
 
-            if ($config['_params'] != null){
-                if (isset($this->app[$config['_params']])){
+            if ($config['_params'] != null) {
+                if (isset($this->app[$config['_params']])) {
                     $params = $this->app[$config['_params']];
                 }
             }
