@@ -6,14 +6,11 @@ use Silex\Application;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 use Silex\Api\ControllerProviderInterface;
-use Singular\Annotation\Controller;
 
 /**
  * Classe PackServiceProvider, implementa a estrutura básica de um pacote.
  *
  * @author Otávio Fernandes <otavio@netonsolucoes.com.br>
- *
- * @package Singular\Provider
  */
 class PackServiceProvider implements ServiceProviderInterface, ControllerProviderInterface
 {
@@ -32,12 +29,16 @@ class PackServiceProvider implements ServiceProviderInterface, ControllerProvide
     /**
      * @param Application $app
      */
-    public function boot(Application $app){}
+    public function boot(Application $app)
+    {
+    }
 
     /**
      * @param Application $app
      */
-    public function connect(Application $app){}
+    public function connect(Application $app)
+    {
+    }
 
     /**
      * Retorna o shortname do pacote.
@@ -60,5 +61,4 @@ class PackServiceProvider implements ServiceProviderInterface, ControllerProvide
 
         return $reflection->getNamespaceName();
     }
-
-} 
+}

@@ -13,7 +13,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\HttpKernel\EventListener\RouterListener;
 use Singular\ConfigLoader;
 use Singular\ServiceLocator;
 use Singular\Resolver;
@@ -50,7 +49,7 @@ class SingularServiceProvider implements ServiceProviderInterface, EventListener
             return new ServiceLocator($app['singular.packs'], $app['singular.service_map'], $app['singular.resolver']);
         };
 
-        $app['singular.service_resolver'] = function() use ($app) {
+        $app['singular.service_resolver'] = function () use ($app) {
             return new ServiceResolver($app);
         };
 
@@ -62,7 +61,7 @@ class SingularServiceProvider implements ServiceProviderInterface, EventListener
             return new ControllerLocator($app['singular.resolver'], $app['singular.packs'], $app['singular.service_map']);
         };
 
-        $app['singular.controller_resolver'] = function() use ($app) {
+        $app['singular.controller_resolver'] = function () use ($app) {
             return new ControllerResolver($app);
         };
     }
@@ -70,7 +69,7 @@ class SingularServiceProvider implements ServiceProviderInterface, EventListener
     /**
      * Registra o listener para interceptar a requisição e localizar o respectivo controlador.
      *
-     * @param Container $app
+     * @param Container                $app
      * @param EventDispatcherInterface $dispatcher
      */
     public function subscribe(Container $app, EventDispatcherInterface $dispatcher)
@@ -83,6 +82,6 @@ class SingularServiceProvider implements ServiceProviderInterface, EventListener
                 $app->flush();
             }
 
-        },APPLICATION::EARLY_EVENT);
+        }, APPLICATION::EARLY_EVENT);
     }
 }

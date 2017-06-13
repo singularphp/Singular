@@ -4,7 +4,6 @@ namespace Singular\Resolver;
 
 use Pimple\Container;
 use Singular\Annotation\Controller;
-use Singular\Annotation\Direct;
 use Singular\Annotation\Route;
 use Singular\Annotation\Before;
 use Singular\Annotation\After;
@@ -20,7 +19,6 @@ use Singular\Application;
 /**
  * Class ControllerResolver.
  *
- * @package Singular\Resolver
  * @author Otávio Fernandes <otavio@netonsolucoes.com.br>
  */
 class ControllerResolver
@@ -87,7 +85,6 @@ class ControllerResolver
             if ($route) {
                 $this->registerBasicRoute($route, $controller, $controllerService, $reflectionClass, $reflectionMethod, $beforeFilters, $afterFilters);
             }
-
         }
     }
 

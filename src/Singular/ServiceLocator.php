@@ -3,7 +3,6 @@
 namespace Singular;
 
 use Pimple\Container;
-use Singular\Resolver;
 
 /**
  * Class ServiceLocator.
@@ -82,7 +81,7 @@ class ServiceLocator
     {
         $path = '';
 
-        for ($i = 1; $i < count($parts) -1; $i++) {
+        for ($i = 1; $i < count($parts) - 1; ++$i) {
             $part = $parts[$i];
             $path .= $this->keyToName($part).'\\';
         }

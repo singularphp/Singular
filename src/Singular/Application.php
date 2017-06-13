@@ -2,7 +2,6 @@
 
 namespace Singular;
 
-use Pimple\Container;
 use Singular\Provider\PackServiceProvider;
 use Silex\Application as SilexApplication;
 use Pimple\ServiceProviderInterface;
@@ -10,8 +9,6 @@ use Singular\Provider\SingularServiceProvider;
 use Symfony\Component\Finder\Finder;
 use Silex\Provider\ServiceControllerServiceProvider;
 use Singular\Response\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 /**
  * Classe principal do Framework.
@@ -43,7 +40,7 @@ class Application extends SilexApplication
 
             return $app['base_dir'].'/web';
         };
-        
+
         $app->register(new ServiceControllerServiceProvider());
         $app->register(new SingularServiceProvider());
     }

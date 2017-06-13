@@ -4,12 +4,15 @@ namespace Singular\Provider;
 
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
+use Singular\Config\ChainConfigDriver;
+use Singular\Config\PhpConfigDriver;
+use Singular\Config\JsonConfigDriver;
+use Singular\Config\YamlConfigDriver;
 
 /**
  * Class ConfigServiceProvider.
  *
  * @author Otávio Fernandes <otavio@netonsolucoes.com.br>
- * @package Singular\Provider
  */
 class ConfigServiceProvider implements ServiceProviderInterface
 {
@@ -37,8 +40,8 @@ class ConfigServiceProvider implements ServiceProviderInterface
     /**
      * ConfigServiceProvider constructor.
      *
-     * @param string $filename
-     * @param array $replacements
+     * @param string            $filename
+     * @param array             $replacements
      * @param ConfigDriver|null $driver
      */
     public function __construct($filename, array $replacements = [], ConfigDriver $driver = null)
@@ -55,10 +58,14 @@ class ConfigServiceProvider implements ServiceProviderInterface
             new PhpConfigDriver(),
             new YamlConfigDriver(),
             new JsonConfigDriver(),
-            new TomlConfigDriver(),
         ]);
     }
 
+    /**
+     * Registra o provedor de serviços de configuração.
+     *
+     * @param Container $pimple
+     */
     public function register(Container $pimple)
     {
         $config = $this->readConfig();
@@ -76,6 +83,12 @@ class ConfigServiceProvider implements ServiceProviderInterface
         $this->merge($pimple, $config);
     }
 
+    /**
+     * Faz o merge das configurações no container de serviços.
+     *
+     * @param Container $pimple
+     * @param array     $config
+     */
     private function merge(Container $pimple, array $config)
     {
         foreach ($config as $name => $value) {
@@ -87,6 +100,14 @@ class ConfigServiceProvider implements ServiceProviderInterface
         }
     }
 
+    /**
+     * Faz o merge das configurações encadeadas recursivamente.
+     *
+     * @param array $currentValue
+     * @param array $newValue
+     *
+     * @return array
+     */
     private function mergeRecursively(array $currentValue, array $newValue)
     {
         foreach ($newValue as $name => $value) {
@@ -100,6 +121,13 @@ class ConfigServiceProvider implements ServiceProviderInterface
         return $currentValue;
     }
 
+    /**
+     * Efetua a substituição de valores variáveis no conteúdo das configurações.
+     *
+     * @param $value
+     *
+     * @return array|string
+     */
     private function doReplacements($value)
     {
         if (!$this->replacements) {
@@ -121,6 +149,11 @@ class ConfigServiceProvider implements ServiceProviderInterface
         return $value;
     }
 
+    /**
+     * Efetua a leitura da configuração.
+     * 
+     * @return mixed
+     */
     private function readConfig()
     {
         if (!$this->filename) {

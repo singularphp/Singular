@@ -5,20 +5,14 @@ namespace Singular;
 use Singular\Annotation\Controller;
 use Singular\Annotation\Service;
 use Singular\Provider\PackServiceProvider;
-use ReflectionClass;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\Common\Annotations\AnnotationReader;
-use Singular\Register\ControllerRegister;
-use Singular\Register\ServiceRegister;
 
 /**
  * Classe Resolver.
  *
  * Resolve e define os serviços e controllers no container da aplicação
  *
- * @package Singular
  * @author Otávio Fernandes <otavio@netonsolucoes.com.br>
  */
 class Resolver

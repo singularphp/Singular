@@ -9,7 +9,7 @@ use Symfony\Component\Yaml\Yaml;
  *
  * @author Otávio Fernandes <otavio@netonsolucoes.com.br>
  */
-class YamlDriver implements ConfigDriverInterface
+class YamlConfigDriver implements ConfigDriverInterface
 {
     /**
      * Implementa o carregamento do conteúdo do arquivo de configuração.
@@ -32,7 +32,7 @@ class YamlDriver implements ConfigDriverInterface
      * Implementa a validação da extensão suportada pelo driver.
      *
      * @param string $filename
-     * 
+     *
      * @return bool
      */
     public function supports($filename)

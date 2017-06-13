@@ -4,7 +4,7 @@ namespace Singular;
 
 use Pimple\Container;
 use Symfony\Component\Finder\Finder;
-use Igorw\Silex\ConfigServiceProvider;
+use Singular\Provider\ConfigServiceProvider;
 
 /**
  * Class ConfigLoader.
