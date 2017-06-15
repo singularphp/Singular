@@ -46,7 +46,11 @@ class SingularServiceProvider implements ServiceProviderInterface, EventListener
         };
 
         $app['singular.service_locator'] = function () use ($app) {
-            return new ServiceLocator($app['singular.packs'], $app['singular.service_map'], $app['singular.resolver']);
+            return new ServiceLocator(
+                $app['singular.packs'],
+                $app['singular.service_map'],
+                $app['singular.resolver']
+            );
         };
 
         $app['singular.service_resolver'] = function () use ($app) {
@@ -54,11 +58,18 @@ class SingularServiceProvider implements ServiceProviderInterface, EventListener
         };
 
         $app['singular.resolver'] = function () use ($app) {
-            return new Resolver($app['singular.controller_resolver'], $app['singular.service_resolver']);
+            return new Resolver(
+                $app['singular.controller_resolver'],
+                $app['singular.service_resolver']
+            );
         };
 
         $app['singular.controller_locator'] = function () use ($app) {
-            return new ControllerLocator($app['singular.resolver'], $app['singular.packs'], $app['singular.service_map']);
+            return new ControllerLocator(
+                $app['singular.resolver'],
+                $app['singular.packs'],
+                $app['singular.service_map']
+            );
         };
 
         $app['singular.controller_resolver'] = function () use ($app) {

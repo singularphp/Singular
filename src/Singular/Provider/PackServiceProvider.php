@@ -20,7 +20,7 @@ class PackServiceProvider implements ServiceProviderInterface, ControllerProvide
     protected $pack = '';
 
     /**
-     * @param Application $app
+     * @param 'Container $app
      */
     public function register(Container $app)
     {
