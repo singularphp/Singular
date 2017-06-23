@@ -31,20 +31,41 @@ class Application extends SilexApplication
         $app = $this;
         $app['monitor.start_time'] = microtime(true);
 
-        $app['web_dir'] = function () use ($app) {
-            if (!isset($app['base_dir'])) {
-                throw new \Exception('O diretorio raiz da aplicacao "base_dir" nao foi definido!');
-            } elseif (!is_dir($app['base_dir'])) {
-                throw new \Exception('O diretorio raiz da aplicacao "base_dir" nao foi encontrado!');
-            }
+        $app['singular.not_found_directory_error'] = 'O diretório  %s definido para o parâmetro %s da aplicação não foi encontrado.';
+        $app['singular.not_defined_directory_error'] = 'O parâmetro %s da aplicação não foi definido.';
 
-            return $app['base_dir'].'/web';
+        $app['singular.check_directory'] = $app->protect(function ($directory) use ($app) {
+            $parametro = 'singular.directory.'.$directory;
+
+            if (!isset($app[$parametro])) {
+                throw new \Exception(sprintf($app['singular.not_defined_directory_error'], $parametro));
+            } elseif (!is_dir($app[$parametro])) {
+                throw new \Exception(sprintf($app['singular.not_defined_directory_error'], $parametro, $app[$parametro]));
+            }
+        });
+
+        $app['singular.directory.web'] = function () use ($app) {
+            $app['singular.check_directory']('root');
+
+            return $app['singular.directory.root'].'/web';
+        };
+
+        $app['singular.directory.app'] = function() use ($app) {
+            $app['singular.check_directory']('root');
+
+            return $app['singular.directory.root'].'/app';
+        };
+
+        $app['singular.directory.config'] = function() use ($app) {
+            $app['singular.check_directory']('app');
+
+            return $app['singular.directory.app'].'/config';
         };
 
         $app->register(new ServiceControllerServiceProvider());
         $app->register(new SingularServiceProvider());
     }
-
+    
     /**
      * Efetua o carregamento automático dos scripts php dentro do diretório app.
      */
@@ -53,13 +74,7 @@ class Application extends SilexApplication
         $app = $this;
         $finder = new Finder();
 
-        $app['app_dir'] = $app['base_dir'].'/app';
-
-        if (!is_dir($app['app_dir'])) {
-            throw Exception::directoryNotFound('O diretório '.$app['app_dir'].' nao foi encontrado');
-        }
-
-        foreach ($finder->in($app['base_dir'].'/app')->files()->name('*.php') as $file) {
+        foreach ($finder->in($app['singular.directory.app'])->files()->name('*.php') as $file) {
             include_once $file->getRealpath();
         }
     }
