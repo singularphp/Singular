@@ -3,7 +3,7 @@
 namespace Singular;
 
 /**
- * Classe do serviço básico da aplicação.
+ * Classe do serviço padrão do framework.
  *
  * @author Otávio Fernandes <otavio@netonsolucoes.com.br>
  */

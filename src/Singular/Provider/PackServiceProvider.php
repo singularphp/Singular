@@ -2,6 +2,7 @@
 
 namespace Singular\Provider;
 
+use Silex\Api\BootableProviderInterface;
 use Silex\Application;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
@@ -12,7 +13,7 @@ use Silex\Api\ControllerProviderInterface;
  *
  * @author Otávio Fernandes <otavio@netonsolucoes.com.br>
  */
-class PackServiceProvider implements ServiceProviderInterface, ControllerProviderInterface
+abstract class PackServiceProvider implements ServiceProviderInterface, BootableProviderInterface, ControllerProviderInterface
 {
     /**
      * @var string
@@ -22,23 +23,17 @@ class PackServiceProvider implements ServiceProviderInterface, ControllerProvide
     /**
      * @param 'Container $app
      */
-    public function register(Container $app)
-    {
-    }
+    abstract public function register(Container $app);
 
     /**
      * @param Application $app
      */
-    public function boot(Application $app)
-    {
-    }
+    abstract function boot(Application $app);
 
     /**
      * @param Application $app
      */
-    public function connect(Application $app)
-    {
-    }
+    abstract public function connect(Application $app);
 
     /**
      * Retorna o shortname do pacote.
@@ -60,5 +55,17 @@ class PackServiceProvider implements ServiceProviderInterface, ControllerProvide
         $reflection = new \ReflectionClass(get_class($this));
 
         return $reflection->getNamespaceName();
+    }
+
+    /**
+     * Retorna o diretório da classe do pacote.
+     * 
+     * @return string
+     */
+    public function getDirectory()
+    {
+        $reflection = new \ReflectionClass(get_class($this));
+
+        return dirname($reflection->getFileName());
     }
 }
