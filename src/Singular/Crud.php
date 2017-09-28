@@ -95,10 +95,22 @@ trait Crud
 
         $store = $this->getStore();
 
-        return $app->json(array(
-            'success' => true,
-            'record' => $store->save($request->request->all()),
-        ));
+        $record = $store->save($request->request->all());
+
+        if (!is_array($record)) {
+            $response = [
+                'success' => true,
+                'record' => $record
+            ];
+        } else {
+            $response = [
+                'success' => false,
+                'code' => $record['code'],
+                'message' => $record['message']
+            ];
+        }
+
+        return $app->json($response);
     }
 
     /**

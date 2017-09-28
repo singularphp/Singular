@@ -119,7 +119,7 @@ class SingularStore extends SingularService
      *
      * @return StoreService $this
      */
-    public function profile($profile)
+    public function setProfile($profile)
     {
         $this->profile = $profile;
 
@@ -257,18 +257,26 @@ class SingularStore extends SingularService
             $data[$this->id] = 0;
         }
 
-        if (0 === $data[$this->id]) {
-            unset($data[$this->id]);
+        try {
+            if (0 === $data[$this->id]) {
+                unset($data[$this->id]);
 
-            $id = $this->insert($data);
-        } else {
-            if ($this->find($data[$this->id])) {
-                $this->update($data);
+                $id = $this->insert($data);
             } else {
-                $this->insert($data);
-            }
+                if ($this->find($data[$this->id])) {
+                    $this->update($data);
+                } else {
+                    $this->insert($data);
+                }
 
-            $id = $data[$this->id];
+                $id = $data[$this->id];
+            }
+        } catch(\Exception $e) {
+            print_r($e->getCode());
+            return [
+                'code' => $e->getCode(),
+                'message' => $e->getMessage()
+            ];
         }
 
         return $id;
@@ -515,7 +523,7 @@ class SingularStore extends SingularService
      */
     protected function addWhere($qb)
     {
-        $this->addFilter($qb, $this->wheres);
+        $this->addFilters($qb, $this->wheres);
     }
 
     /**
@@ -554,7 +562,13 @@ class SingularStore extends SingularService
      */
     private function getSelect($profile)
     {
-        return implode(",", $this->profiles[$profile]['select']);
+        $select = ['t.*'];
+
+        if (isset($this->profiles[$profile]['select'])) {
+            $select = $this->profiles[$profile]['select'];
+        }
+
+        return implode(",", $select);
     }
 
     /**
@@ -566,7 +580,13 @@ class SingularStore extends SingularService
      */
     private function getJoins($profile)
     {
-        return $this->profiles[$profile]['joins'];
+        $joins = [];
+
+        if (isset($this->profiles[$profile]['joins'])) {
+            $joins = $this->profiles[$profile]['joins'];
+        }
+
+        return $joins;
     }
 
     /**
@@ -578,7 +598,13 @@ class SingularStore extends SingularService
      */
     private function getFilters($profile)
     {
-        return $this->profiles[$profile]['filters'];
+        $filters = [];
+
+        if (isset($this->profiles[$profile]['filters'])){
+            $filters = $this->profiles[$profile]['filters'];
+        }
+
+        return $filters;
     }
 
     /**
@@ -590,7 +616,13 @@ class SingularStore extends SingularService
      */
     private function getGroupings($profile)
     {
-        return $this->profiles[$profile]['groupings'];
+        $groupings = [];
+
+        if (isset($this->profiles[$profile]['groupings'])) {
+            $groupings = $this->profiles[$profile]['groupings'];
+        }
+
+        return $groupings;
     }
 
     /**
