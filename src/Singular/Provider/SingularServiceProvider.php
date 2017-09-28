@@ -88,10 +88,8 @@ class SingularServiceProvider implements ServiceProviderInterface, EventListener
         $dispatcher->addListener(KernelEvents::REQUEST, function (GetResponseEvent $event) use ($app) {
             $request = $event->getRequest();
 
-            if (0 === strpos($request->headers->get('Content-Type'), 'application/json')) {
-                $app['singular.controller_locator']->locateController($request->getPathInfo());
-                $app->flush();
-            }
+            $app['singular.controller_locator']->locateController($request->getPathInfo());
+            $app->flush();
 
         }, APPLICATION::EARLY_EVENT);
     }
