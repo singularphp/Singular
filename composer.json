@@ -9,7 +9,7 @@
     ],
     "require": {
         "php": ">=5.6.10",
-        "silex/silex": "2.1.0",
+        "silex/silex": "~2.0",
         "symfony/yaml": "~3.2",
         "symfony/finder": ">=2.2",
         "doctrine/dbal": "2.5.12",
