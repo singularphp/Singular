@@ -566,7 +566,7 @@ class SingularStore extends SingularService
      *
      * @return string
      */
-    private function getSelect($profile)
+    protected function getSelect($profile)
     {
         $select = ['t.*'];
 
@@ -584,7 +584,7 @@ class SingularStore extends SingularService
      *
      * @return array
      */
-    private function getJoins($profile)
+    protected function getJoins($profile)
     {
         $joins = [];
 
@@ -602,7 +602,7 @@ class SingularStore extends SingularService
      *
      * @return array
      */
-    private function getFilters($profile)
+    protected function getFilters($profile)
     {
         $filters = [];
 
@@ -620,7 +620,7 @@ class SingularStore extends SingularService
      *
      * @return array
      */
-    private function getGroupings($profile)
+    protected function getGroupings($profile)
     {
         $groupings = [];
 
