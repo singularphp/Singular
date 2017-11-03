@@ -425,6 +425,12 @@ class SingularStore extends SingularService
         $sgbd = isset($this->app['dbms']) ? $this->app['dbms'] : 'mysql';
 
         foreach ($filters as $key => $filter) {
+
+            if (is_array($filter)) {
+                $key = $filter['property'];
+                $filter = $filter['clause'];
+            }
+
             if (strpos($key, '.') === false){
                 $keyAlias = "t.".$key;
             } else {
