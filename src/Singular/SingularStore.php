@@ -425,6 +425,7 @@ class SingularStore extends SingularService
         $sgbd = isset($this->app['dbms']) ? $this->app['dbms'] : 'mysql';
 
         foreach ($filters as $key => $filter) {
+            $filterKey = $key;
 
             if (is_array($filter)) {
                 $key = $filter['property'];
@@ -454,12 +455,12 @@ class SingularStore extends SingularService
 
             switch ($params[0]) {
                 case '%':
-                    $list[$key] = "%$filter%";
+                    $list[$filterKey] = "%$filter%";
 
                     if ($sgbd == 'postgres'){
-                        $qb->andWhere($keyAlias.' ilike :'.$key);
+                        $qb->andWhere($keyAlias.' ilike :'.$filterKey);
                     } else {
-                        $qb->andWhere($keyAlias.' like :'.$key);
+                        $qb->andWhere($keyAlias.' like :'.$filterKey);
                     }
 
                     break;
@@ -476,8 +477,8 @@ class SingularStore extends SingularService
                     $qb->andWhere($keyAlias.'  IS NOT NULL');
                     break;
                 default:
-                    $list[$key] = $filter;
-                    $qb->andWhere($keyAlias.' '.$params[0].' :'.$key);
+                    $list[$filterKey] = $filter;
+                    $qb->andWhere($keyAlias.' '.$params[0].' :'.$filterKey);
                     break;
             }
 
