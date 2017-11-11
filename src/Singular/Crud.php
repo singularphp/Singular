@@ -92,22 +92,37 @@ trait Crud
     public function save(Request $request)
     {
         $app = $this->app;
-
         $store = $this->getStore();
 
-        $record = $store->save($request->request->all());
+        $app['db']->beginTransaction();
 
-        if (!is_array($record)) {
-            $response = [
-                'success' => true,
-                'record' => $record
-            ];
-        } else {
+        try {
+            $record = $store->save($request->request->all());
+
+            if (!is_array($record)) {
+                $response = [
+                    'success' => true,
+                    'record' => $record
+                ];
+            } else {
+                $response = [
+                    'success' => false,
+                    'code' => $record['code'],
+                    'message' => $record['message']
+                ];
+            }
+
+            $app['db']->commit();
+            
+        } catch(\Exception $e) {
+            $app['db']->rollback();
+
             $response = [
                 'success' => false,
-                'code' => $record['code'],
-                'message' => $record['message']
+                'code' => $e->getCode(),
+                'message' => $e->getMessage()
             ];
+
         }
 
         return $app->json($response);
