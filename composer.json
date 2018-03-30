@@ -12,11 +12,12 @@
         "silex/silex": "~2.0",
         "symfony/yaml": "~3.2",
         "symfony/finder": ">=2.2",
-        "doctrine/dbal": "2.5.12",
+        "doctrine/dbal": "2.5.13",
         "twig/twig": ">=1.8,<2.0",
         "symfony/twig-bridge": "~2.3",
         "monolog/monolog": "1.22.1",
-        "symfony/filesystem": "^3.3"
+        "symfony/filesystem": "^3.3",
+        "singular/capsule": "2.*"
     },
     "autoload": {
         "psr-0": {
