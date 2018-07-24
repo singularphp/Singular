@@ -140,7 +140,7 @@ class SingularStore extends SingularService
      *
      * @var \Doctrine\DBAL\Driver\Connection
      */
-    private $db = null;
+    protected $db = null;
 
     /**
      * Inicializa o Store.
@@ -216,7 +216,7 @@ class SingularStore extends SingularService
             $qb->andWhere('t.'.$this->softDeleteName.' IS NULL');
         }
 
-        return $this->fetchAssoc($qb->getSQL(), $params);
+        return $this->db->fetchAssoc($qb->getSQL(), $params);
     }
 
     /**
@@ -663,7 +663,8 @@ class SingularStore extends SingularService
     protected function getSelect($profile)
     {
         $compose = $this->getNamespacedProfile($profile);
-        $select = $profile['namespace'] ? [$this->getSelect($compose['namespace'])] : ['t.*'];
+        $profileNs = $compose['namespace'];
+        $select = ($profileNs !== false) ? $this->getSelect($profileNs) : ['t.*'];
         $profileKey = $compose['profile'];
 
         if (isset($this->profiles[$profileKey]['select'])) {
@@ -683,9 +684,9 @@ class SingularStore extends SingularService
     protected function getJoins($profile)
     {
         $compose = $this->getNamespacedProfile($profile);
-        $joins = $profile['namespace'] ? $this->getJoins($compose['namespace']) : [];
+        $profileNs = $compose['namespace'];
+        $joins = ($profileNs !== false) ? $this->getJoins($profileNs) : [];
         $profileKey = $compose['profile'];
-
 
         if (isset($this->profiles[$profileKey]['joins'])) {
             $joins = $this->profiles[$profileKey]['joins'];
@@ -704,7 +705,8 @@ class SingularStore extends SingularService
     protected function getFilters($profile)
     {
         $compose = $this->getNamespacedProfile($profile);
-        $filters = $profile['namespace'] ? $this->getFilters($compose['namespace']) : [];
+        $profileNs = $compose['namespace'];
+        $filters = ($profileNs !== false) ? $this->getFilters($profileNs) : [];
         $profileKey = $compose['profile'];
 
         if (isset($this->profiles[$profileKey]['filters'])) {
@@ -724,7 +726,8 @@ class SingularStore extends SingularService
     protected function getGroupings($profile)
     {
         $compose = $this->getNamespacedProfile($profile);
-        $groupings = $profile['namespace'] ? $this->getGroupings($compose['namespace']) : [];
+        $profileNs = $compose['namespace'];
+        $groupings = ($profileNs !== false) ? $this->getGroupings($compose['namespace']) : [];
         $profileKey = $compose['profile'];
 
         if (isset($this->profiles[$profileKey]['groupings'])) {
