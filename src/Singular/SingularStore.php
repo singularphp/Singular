@@ -2,15 +2,12 @@
 
 namespace Singular;
 
-use Doctrine\DBAL\Driver\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 
 /**
  * Classe do store básico da aplicação.
  *
  * @author Otávio Fernandes <otavio@netonsolucoes.com.br>
- *
- * @package Singular
  */
 class SingularStore extends SingularService
 {
@@ -34,6 +31,13 @@ class SingularStore extends SingularService
      * @var string
      */
     protected $sequence = null;
+
+    /**
+     * Esquema de conexão.
+     *
+     * @var null
+     */
+    protected $schema = null;
 
     /**
      * Nome da conexão default.
@@ -98,8 +102,8 @@ class SingularStore extends SingularService
     /**
      * Seta em tempo de execução o nome da tabela a ser utilizada pelo store.
      *
-     * @param String $table
-     * @param String $conn
+     * @param string $table
+     * @param string $conn
      */
     public function setTable($table, $conn = 'default')
     {
@@ -121,9 +125,9 @@ class SingularStore extends SingularService
     /**
      * Localiza um registro pelo seu id.
      *
-     * @param integer $id
+     * @param int $id
      *
-     * @return Array
+     * @return array
      */
     public function find($id)
     {
@@ -131,16 +135,16 @@ class SingularStore extends SingularService
 
         $qb->select($this->defaultSelect)
             ->from($this->table, 't')
-            ->where('t.'.$this->id." = :id");
+            ->where('t.'.$this->id.' = :id');
 
         $qb->addSelect($this->select);
         $this->addJoin($qb);
         $this->addWhere($qb);
         $this->addGroupBy($qb);
 
-        return $this->db->fetchAssoc($qb->getSQL(), array(
-            'id' => $id
-        ));
+        return $this->db->fetchAssoc($qb->getSQL(), [
+            'id' => $id,
+        ]);
     }
 
     /**
@@ -176,7 +180,7 @@ class SingularStore extends SingularService
      *
      * @return array
      */
-    public function findBy($filters, $pageOpts = array(), $sort = array())
+    public function findBy($filters, $pageOpts = [], $sort = [])
     {
         $qb = $this->db->createQueryBuilder();
 
@@ -212,7 +216,7 @@ class SingularStore extends SingularService
      *
      * @return array
      */
-    public function findAll($pageOpts = array(), $sort = array())
+    public function findAll($pageOpts = [], $sort = [])
     {
         $qb = $this->db->createQueryBuilder();
 
@@ -226,7 +230,7 @@ class SingularStore extends SingularService
             $qb->select('t.*');
         }
 
-        $qb->from($this->table,'t')
+        $qb->from($this->table, 't')
             ->where('1 = 1');
 
         $qb->addSelect($this->select);
@@ -242,9 +246,9 @@ class SingularStore extends SingularService
     /**
      * Salva um registro no banco de dados.
      *
-     * @param Array $data
+     * @param array $data
      *
-     * @return Mixed
+     * @return mixed
      */
     public function save($data)
     {
@@ -272,16 +276,16 @@ class SingularStore extends SingularService
     /**
      * Exclui um registro da tabela.
      *
-     * @param Integer $id
+     * @param int $id
      *
-     * @return Boolean
+     * @return bool
      */
     public function remove($id)
     {
         try {
-            $this->db->delete($this->table, array(
-                $this->id => $id
-            ));
+            $this->db->delete($this->table, [
+                $this->id => $id,
+            ]);
 
             return true;
         } catch (\Exception $e) {
@@ -312,20 +316,20 @@ class SingularStore extends SingularService
      *
      * @param array $data
      *
-     * @return Mixed
+     * @throws \Exception
+     *
+     * @return mixed
      */
     protected function insert($data)
     {
         try {
-
             $this->db->insert($this->table, $this->fromArray($data));
 
-            if ($this->sequence){
+            if ($this->sequence) {
                 $id = $this->db->lastInsertId($this->sequence);
             } else {
                 $id = $this->db->lastInsertId($this->id);
             }
-
         } catch (\Exception $e) {
             throw $e;
         }
@@ -337,18 +341,19 @@ class SingularStore extends SingularService
      * Atualiza um registro na tabela.
      *
      * @param array $data
+     *
      * @return mixed
+     *
      * @throws \Exception
      */
     protected function update($data)
     {
         try {
-            $this->db->update($this->table, $this->fromArray($data), array(
-                $this->id => $data[$this->id]
-            ));
+            $this->db->update($this->table, $this->fromArray($data), [
+                $this->id => $data[$this->id],
+            ]);
 
             $id = $data[$this->id];
-
         } catch (\Exception $e) {
             throw $e;
         }
@@ -373,35 +378,35 @@ class SingularStore extends SingularService
      * Pagina o resultado de uma consulta.
      *
      * @param QueryBuilder $qb
-     * @param Array        $pageOpts
-     * @param Array        $filters
+     * @param array        $pageOpts
+     * @param array        $filters
      *
-     * @return Array
+     * @return array
      */
-    protected function paginate($qb, $pageOpts, $filters = array())
+    protected function paginate($qb, $pageOpts, $filters = [])
     {
         $db = $this->db;
 
         $total = count($db->fetchAll($qb->getSQL(), $filters));
 
         if (isset($pageOpts['start'])) {
-            $qb->setFirstResult(isset($pageOpts['start']) ? $pageOpts['start'] : 0)->
-            setMaxResults(isset($pageOpts['limit']) ? $pageOpts['limit'] : 200);
+            $qb->setFirstResult(isset($pageOpts['start']) ? $pageOpts['start'] : 0)
+                ->setMaxResults(isset($pageOpts['limit']) ? $pageOpts['limit'] : 200);
         }
 
         $result = $db->fetchAll($qb->getSQL(), $filters);
 
-        return array(
+        return [
             'total' => $total,
-            'results' => $result
-        );
+            'results' => $result,
+        ];
     }
 
     /**
      * Adiciona os filtros ao query builder.
      *
      * @param QueryBuilder $qb
-     * @param array $filters
+     * @param array        $filters
      *
      * @return array
      */
@@ -412,21 +417,21 @@ class SingularStore extends SingularService
         $sgbd = isset($this->app['dbms']) ? $this->app['dbms'] : 'mysql';
 
         foreach ($filters as $key => $filter) {
-            if (strpos($key, '.') === false){
-                $keyAlias = "t.".$key;
+            if (strpos($key, '.') === false) {
+                $keyAlias = 't.'.$key;
             } else {
                 $keyAlias = $key;
-                $key = str_replace('.','_',$key);
+                $key = str_replace('.', '_', $key);
             }
 
-            $params = explode(':',$filter);
+            $params = explode(':', $filter);
 
             if (count($params) == 1) {
-                if (!in_array($filter, array('isnull','isnotnull','in','notin'))){
-                    array_unshift($params, 'like');
+                if (!in_array($filter, array('isnull', 'isnotnull', 'in', 'notin'))) {
+                    array_unshift($params, '=');
                 }
 
-                if (in_array($filter, array('isnull','isnotnull'))){
+                if (in_array($filter, array('isnull', 'isnotnull'))) {
                     array_unshift($params, $filter);
                 }
             }
@@ -437,7 +442,7 @@ class SingularStore extends SingularService
                 case 'like':
                     $list[$key] = "%$filter%";
 
-                    if ($sgbd == 'postgres'){
+                    if ($sgbd == 'postgres') {
                         $qb->andWhere($keyAlias.' ilike :'.$key);
                     } else {
                         $qb->andWhere($keyAlias.' like :'.$key);
@@ -461,8 +466,6 @@ class SingularStore extends SingularService
                     $qb->andWhere($keyAlias.' '.$params[0].' :'.$key);
                     break;
             }
-
-
         }
 
         return $list;
@@ -476,15 +479,14 @@ class SingularStore extends SingularService
     protected function addJoin($qb)
     {
         foreach ($this->joins as $join) {
-
             if (!isset($join['type'])) {
                 $join['type'] = 'join';
             }
 
             if ($join['type'] == 'left') {
-                $qb->leftJoin('t',$join['table'], $join['alias'], $join['condition']);
+                $qb->leftJoin('t', $join['table'], $join['alias'], $join['condition']);
             } else {
-                $qb->join('t',$join['table'], $join['alias'], $join['condition']);
+                $qb->join('t', $join['table'], $join['alias'], $join['condition']);
             }
         }
     }
@@ -514,9 +516,9 @@ class SingularStore extends SingularService
     /**
      * Mapeia os dados recebidos de um array nos campos existentes na tabela.
      *
-     * @param Array $source
+     * @param array $source
      *
-     * @return Array
+     * @return array
      */
     protected function fromArray($source)
     {
@@ -524,9 +526,7 @@ class SingularStore extends SingularService
         $columnNames = $this->getColumnNames();
 
         foreach ($source as $key => $value) {
-
             if (in_array($key, $columnNames)) {
-
                 if (is_string($value)) {
                     $value = ($value);
                 }
@@ -541,7 +541,9 @@ class SingularStore extends SingularService
     /**
      * Aplica filtro baseado no GridFeature Filter.
      *
-     * @param  Array  $filters
+     * @param array $filters
+     * @deprecated
+     *
      * @return string
      */
     protected function getGridFilter($filters)
@@ -559,7 +561,7 @@ class SingularStore extends SingularService
 
         // loop through filters sent by client
         if (is_array($filters)) {
-            for ($i=0;$i<count($filters);$i++) {
+            for ($i = 0;$i < count($filters);++$i) {
                 $filter = $filters[$i];
 
                 // assign filter data (location depends if encoded or not)
@@ -576,34 +578,34 @@ class SingularStore extends SingularService
                 }
 
                 switch ($filterType) {
-                    case 'string' : $qs .= " AND ".$field." LIKE '%".$value."%'"; Break;
+                    case 'string' : $qs .= ' AND '.$field." LIKE '%".$value."%'"; break;
                     case 'list' :
-                        if (strstr($value,',')) {
-                            $fi = explode(',',$value);
-                            for ($q=0;$q<count($fi);$q++) {
+                        if (strstr($value, ',')) {
+                            $fi = explode(',', $value);
+                            for ($q = 0;$q < count($fi);++$q) {
                                 $fi[$q] = "'".$fi[$q]."'";
                             }
-                            $value = implode(',',$fi);
-                            $qs .= " AND ".$field." IN (".$value.")";
+                            $value = implode(',', $fi);
+                            $qs .= ' AND '.$field.' IN ('.$value.')';
                         } else {
-                            $qs .= " AND ".$field." = '".$value."'";
+                            $qs .= ' AND '.$field." = '".$value."'";
                         }
-                        Break;
-                    case 'boolean' : $qs .= " AND ".$field." = ".($value); Break;
+                        break;
+                    case 'boolean' : $qs .= ' AND '.$field.' = '.($value); break;
                     case 'numeric' :
                         switch ($compare) {
-                            case 'eq' : $qs .= " AND ".$field." = ".$value; Break;
-                            case 'lt' : $qs .= " AND ".$field." < ".$value; Break;
-                            case 'gt' : $qs .= " AND ".$field." > ".$value; Break;
+                            case 'eq' : $qs .= ' AND '.$field.' = '.$value; break;
+                            case 'lt' : $qs .= ' AND '.$field.' < '.$value; break;
+                            case 'gt' : $qs .= ' AND '.$field.' > '.$value; break;
                         }
-                        Break;
+                        break;
                     case 'date' :
                         switch ($compare) {
-                            case 'eq' : $qs .= " AND ".$field." = '".date('Y-m-d',strtotime($value))."'"; Break;
-                            case 'lt' : $qs .= " AND ".$field." < '".date('Y-m-d',strtotime($value))."'"; Break;
-                            case 'gt' : $qs .= " AND ".$field." > '".date('Y-m-d',strtotime($value))."'"; Break;
+                            case 'eq' : $qs .= ' AND '.$field." = '".date('Y-m-d', strtotime($value))."'"; break;
+                            case 'lt' : $qs .= ' AND '.$field." < '".date('Y-m-d', strtotime($value))."'"; break;
+                            case 'gt' : $qs .= ' AND '.$field." > '".date('Y-m-d', strtotime($value))."'"; break;
                         }
-                        Break;
+                        break;
                 }
             }
             $where .= $qs;
@@ -615,9 +617,7 @@ class SingularStore extends SingularService
     /**
      * Retorna os nomes das colunas da tabela.
      *
-     * @return Array
-     *
-     * @return Array
+     * @return array
      */
     protected function getColumnNames()
     {
@@ -626,7 +626,7 @@ class SingularStore extends SingularService
 
         if (count($columns) == 0) {
             $schema = $this->schema ?: $this->app['db.schema'];
-            $fullTable = $schema.".".$this->table;
+            $fullTable = $schema.'.'.$this->table;
             $columns = $this->db->getSchemaManager()->listTableColumns($fullTable);
         }
 
@@ -640,7 +640,7 @@ class SingularStore extends SingularService
     /**
      * Recupera a conexão utilizada pelo store.
      *
-     * @return Connection
+     * @return \Doctrine\DBAL\Connection
      */
     protected function getConnection()
     {
@@ -650,4 +650,4 @@ class SingularStore extends SingularService
             return $this->app['dbs'][$this->conn];
         }
     }
-} 
+}
