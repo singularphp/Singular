@@ -23,7 +23,7 @@ trait Crud
      *
      * @return JsonResponse
      */
-    public function all(Request $request)
+    final public function all(Request $request)
     {
         $app = $this->app;
 
@@ -44,7 +44,7 @@ trait Crud
      *
      * @return JsonResponse
      */
-    public function find(Request $request)
+    final public function find(Request $request)
     {
         $app = $this->app;
 
@@ -69,7 +69,7 @@ trait Crud
      *
      * @return JsonResponse
      */
-    public function get(Request $request)
+    final public function get(Request $request)
     {
         $app = $this->app;
 
@@ -91,7 +91,7 @@ trait Crud
      *
      * @return JsonResponse
      */
-    public function save(Request $request)
+    final public function save(Request $request)
     {
         $app = $this->app;
 
@@ -112,7 +112,7 @@ trait Crud
      *
      * @return JsonResponse
      */
-    public function remove(Request $request)
+    final public function remove(Request $request)
     {
         $app = $this->app;
 
