@@ -37,10 +37,13 @@ class ServiceResolver
     public function resolve($annotation, $reflectionClass, $pack)
     {
         $app = $this->app;
-        $relativeNamespace = preg_replace('/'.$pack->getNameSpace().'/', '', $reflectionClass->getName(), 1);
-        $serviceKey = $pack->getPackName().strtolower(implode('.', explode('\\', $relativeNamespace)));
-        $class = $reflectionClass->getName();
 
+        $snakeClass = implode('_',preg_split('/(?=[A-Z])/', $reflectionClass->getShortName(), -1, PREG_SPLIT_NO_EMPTY));
+        $relativeNamespace = preg_replace('/'.$pack->getNameSpace().'/', '', $reflectionClass->getName(), 1);
+        list($empty, $serviceDir, $serviceClass) = explode('\\', $relativeNamespace);
+        $serviceKey = implode('.',[$pack->getPackName(),strtolower($serviceDir), strtolower($snakeClass)]);
+
+        $class = $reflectionClass->getName();
         switch ($annotation->type) {
             case 'factory':
                 $app[$serviceKey] = $app->factory(function () use ($class, $app, $pack) {
