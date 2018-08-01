@@ -23,13 +23,6 @@ class SingularStore extends SingularService
     protected $conn = 'default';
 
     /**
-     * Conexão com o banco de dados.
-     *
-     * @var \Doctrine\DBAL\Driver\Connection
-     */
-    protected $db;
-
-    /**
      * Tabela origem do store.
      *
      * @var string
@@ -41,7 +34,7 @@ class SingularStore extends SingularService
      *
      * @var string
      */
-    protected $id = 'id';
+    protected $primaryKey = 'id';
 
     /**
      * Campo utilizado para definição do nome da sequence da tabela.
@@ -77,28 +70,77 @@ class SingularStore extends SingularService
     /**
      * @var array
      */
-    protected $select = array();
+    protected $select = [];
 
     /**
      * Lista de joins.
      *
      * @var array
      */
-    protected $joins = array();
+    protected $joins = [];
 
     /**
      * Lista de condições padrão.
      *
      * @var array
      */
-    protected $wheres = array();
+    protected $wheres = [];
 
     /**
      * Lista de groupBy da cláusula sql.
      *
      * @var array
      */
-    protected $groupBy = array();
+    protected $groupBy = [];
+
+    /**
+     * Se o store irá utilizar o mecanismo de soft delete para a tabela.
+     *
+     * @var bool
+     */
+    protected $softDelete = false;
+
+    /**
+     * Nome da coluna que armazena a informação de exclusão do registro.
+     *
+     * @var string
+     */
+    protected $softDeleteName = 'dt_exclusao';
+
+    /**
+     * Se o store irá registrar automaticamente a data de criação do registro.
+     *
+     * @var bool
+     */
+    protected $creationTouch = false;
+
+    /**
+     * Nome da coluna que armazena a informação de criação do registro.
+     *
+     * @var string
+     */
+    protected $creationTouchName = 'dt_criacao';
+
+    /**
+     * Se  store irá registrar automaticamente a data de atualização do registro.
+     *
+     * @var bool
+     */
+    protected $updateTouch = false;
+
+    /**
+     * Nome da coluna que armazena a informação de atualização do registro.
+     *
+     * @var string
+     */
+    protected $updateTouchName = 'dt_atualizacao';
+
+    /**
+     * Conexão com o banco de dados.
+     *
+     * @var \Doctrine\DBAL\Driver\Connection
+     */
+    protected $db = null;
 
     /**
      * Inicializa o Store.
@@ -113,17 +155,68 @@ class SingularStore extends SingularService
     }
 
     /**
+     * Cria e retorna uma nova instância de QueryBuilder.
+     *
+     * @return QueryBuilder
+     */
+    public function createQueryBuilder()
+    {
+        return $this->db->createQueryBuilder();
+    }
+
+    /**
      * Altera o perfil de consulta do store.
      *
      * @param string $profile
      *
-     * @return StoreService $this
+     * @return SingularStore $this
      */
     public function setProfile($profile)
     {
         $this->profile = $profile;
 
         return $this;
+    }
+
+    /**
+     * Retorna todos os registros que casam com uma consulta montada num QueryBuilder.
+     *
+     * @param QueryBuilder $qb
+     * @param array        $params
+     * @param array        $pageOpts
+     *
+     * @return array
+     */
+    public function getAll(QueryBuilder $qb, array $params = [], array $pageOpts = [])
+    {
+        if ($this->softDelete) {
+            $qb->andWhere('t.'.$this->softDeleteName.' IS NULL');
+        }
+
+        if (!empty($pageOpts)) {
+            $rs = $this->paginate($qb, $pageOpts, $params);
+        } else {
+            $rs = $this->db->fetchAll($qb->getSQL(), $params);
+        }
+
+        return $rs;
+    }
+
+    /**
+     * Recupera o primeiro registro que casa com uma consulta montada no QueryBuilder.
+     *
+     * @param QueryBuilder $qb
+     * @param array        $params
+     *
+     * @return array
+     */
+    public function getRow(QueryBuilder $qb, array $params = [])
+    {
+        if ($this->softDelete) {
+            $qb->andWhere('t.'.$this->softDeleteName.' IS NULL');
+        }
+
+        return $this->db->fetchAssoc($qb->getSQL(), $params);
     }
 
     /**
@@ -149,7 +242,7 @@ class SingularStore extends SingularService
 
         $qb->select($this->getSelect($this->profile))
             ->from($this->table, 't')
-            ->where('t.'.$this->id." = :id");
+            ->where('t.'.$this->primaryKey." = :id");
 
         $this->addJoins($qb, $this->getJoins($this->profile));
         $params = $this->addFilters($qb, $this->getFilters($this->profile));
@@ -157,7 +250,7 @@ class SingularStore extends SingularService
 
         $params['id'] = $id;
 
-        return $this->db->fetchAssoc($qb->getSQL(), $params);
+        return $this->getRow($qb, $params);
     }
 
     /**
@@ -179,7 +272,7 @@ class SingularStore extends SingularService
         $params = $this->addFilters($qb, $this->getFilters($this->profile));
         $params = array_merge($params, $this->addFilters($qb, $filters));
 
-        return $this->db->fetchAssoc($qb->getSQL(), $params);
+        return $this->getRow($qb, $params);
     }
 
     /**
@@ -205,13 +298,7 @@ class SingularStore extends SingularService
         $this->addGrouping($qb, $this->getGroupings($this->profile));
         $this->addSort($qb, $sort);
 
-        if (!empty($pageOpts)) {
-            $rs = $this->paginate($qb, $pageOpts, $params);
-        } else {
-            $rs = $this->db->fetchAll($qb->getSQL(), $params);
-        }
-
-        return $rs;
+        return $this->getAll($qb, $params, $pageOpts);
     }
 
     /**
@@ -235,13 +322,7 @@ class SingularStore extends SingularService
         $this->addGrouping($qb, $this->getGroupings($this->profile));
         $this->addSort($qb, $sort);
 
-        if (!empty($pageOpts)) {
-            $rs = $this->paginate($qb, $pageOpts, $params);
-        } else {
-            $rs = $this->db->fetchAll($qb->getSQL(), $params);
-        }
-
-        return $rs;
+        return $this->getAll($qb, $params, $pageOpts);
     }
 
     /**
@@ -253,26 +334,25 @@ class SingularStore extends SingularService
      */
     public function save($data)
     {
-        if (!isset($data[$this->id])) {
-            $data[$this->id] = 0;
+        if (!isset($data[$this->primaryKey])) {
+            $data[$this->primaryKey] = 0;
         }
 
         try {
-            if (0 === $data[$this->id]) {
-                unset($data[$this->id]);
+            if (0 === $data[$this->primaryKey]) {
+                unset($data[$this->primaryKey]);
 
                 $id = $this->insert($data);
             } else {
-                if ($this->find($data[$this->id])) {
+                if ($this->find($data[$this->primaryKey])) {
                     $this->update($data);
                 } else {
                     $this->insert($data);
                 }
 
-                $id = $data[$this->id];
+                $id = $data[$this->primaryKey];
             }
         } catch(\Exception $e) {
-            print_r($e->getCode());
             return [
                 'code' => $e->getCode(),
                 'message' => $e->getMessage()
@@ -293,7 +373,7 @@ class SingularStore extends SingularService
     {
         try {
             $this->db->delete($this->table, array(
-                $this->id => $id
+                $this->primaryKey => $id
             ));
 
             return true;
@@ -325,19 +405,21 @@ class SingularStore extends SingularService
      *
      * @param array $data
      *
-     * @return Mixed
+     * @return integer Identificador do registro inserido
+     *
+     * @throws \Exception
      */
     protected function insert($data)
     {
         try {
 
+            if ($this->creationTouch) {
+                $data[$this->creationTouchName] = date('Y-m-d H:i:s');
+            }
+
             $this->db->insert($this->table, $this->fromArray($data));
 
-            if ($this->sequence){
-                $id = $this->db->lastInsertId($this->sequence);
-            } else {
-                $id = $this->db->lastInsertId($this->id);
-            }
+            $id = $this->db->lastInsertId($this->sequence ? $this->sequence : $this->primaryKey);
 
         } catch (\Exception $e) {
             throw $e;
@@ -350,17 +432,28 @@ class SingularStore extends SingularService
      * Atualiza um registro na tabela.
      *
      * @param array $data
+     *
      * @return mixed
+     *
      * @throws \Exception
      */
     protected function update($data)
     {
         try {
-            $this->db->update($this->table, $this->fromArray($data), array(
-                $this->id => $data[$this->id]
-            ));
 
-            $id = $data[$this->id];
+            if ($this->updateTouch) {
+                $data[$this->updateTouchName] = date('Y-m-d H:i:s');
+            }
+
+            $this->db->update(
+                $this->table,
+                $this->fromArray($data),
+                [
+                    $this->primaryKey => $data[$this->primaryKey]
+                ]
+            );
+
+            $id = $data[$this->primaryKey];
 
         } catch (\Exception $e) {
             throw $e;
@@ -398,8 +491,8 @@ class SingularStore extends SingularService
         $total = count($db->fetchAll($qb->getSQL(), $filters));
 
         if (isset($pageOpts['start'])) {
-            $qb->setFirstResult(isset($pageOpts['start']) ? $pageOpts['start'] : 0)->
-            setMaxResults(isset($pageOpts['limit']) ? $pageOpts['limit'] : 200);
+            $qb->setFirstResult(isset($pageOpts['start']) ? $pageOpts['start'] : 0)
+                ->setMaxResults(isset($pageOpts['limit']) ? $pageOpts['limit'] : 200);
         }
 
         $result = $db->fetchAll($qb->getSQL(), $filters);
@@ -432,7 +525,7 @@ class SingularStore extends SingularService
                 $filter = $filter['clause'];
             }
 
-            if (strpos($key, '.') === false){
+            if (strpos($key, '.') === false) {
                 $keyAlias = "t.".$key;
             } else {
                 $keyAlias = $key;
@@ -442,11 +535,11 @@ class SingularStore extends SingularService
             $params = explode(':',$filter);
 
             if (count($params) == 1) {
-                if (!in_array($filter, array('isnull','isnotnull','in','notin'))){
+                if (!in_array($filter, array('isnull','isnotnull','in','notin'))) {
                     array_unshift($params, '=');
                 }
 
-                if (in_array($filter, array('isnull','isnotnull'))){
+                if (in_array($filter, array('isnull','isnotnull'))) {
                     array_unshift($params, $filter);
                 }
             }
@@ -569,10 +662,13 @@ class SingularStore extends SingularService
      */
     protected function getSelect($profile)
     {
-        $select = ['t.*'];
+        $compose = $this->getNamespacedProfile($profile);
+        $profileNs = $compose['namespace'];
+        $select = ($profileNs !== false) ? $this->getSelect($profileNs) : ['t.*'];
+        $profileKey = $compose['profile'];
 
-        if (isset($this->profiles[$profile]['select'])) {
-            $select = $this->profiles[$profile]['select'];
+        if (isset($this->profiles[$profileKey]['select'])) {
+            $select = $this->profiles[$profileKey]['select'];
         }
 
         return implode(",", $select);
@@ -587,10 +683,13 @@ class SingularStore extends SingularService
      */
     protected function getJoins($profile)
     {
-        $joins = [];
+        $compose = $this->getNamespacedProfile($profile);
+        $profileNs = $compose['namespace'];
+        $joins = ($profileNs !== false) ? $this->getJoins($profileNs) : [];
+        $profileKey = $compose['profile'];
 
-        if (isset($this->profiles[$profile]['joins'])) {
-            $joins = $this->profiles[$profile]['joins'];
+        if (isset($this->profiles[$profileKey]['joins'])) {
+            $joins = $this->profiles[$profileKey]['joins'];
         }
 
         return $joins;
@@ -605,10 +704,13 @@ class SingularStore extends SingularService
      */
     protected function getFilters($profile)
     {
-        $filters = [];
+        $compose = $this->getNamespacedProfile($profile);
+        $profileNs = $compose['namespace'];
+        $filters = ($profileNs !== false) ? $this->getFilters($profileNs) : [];
+        $profileKey = $compose['profile'];
 
-        if (isset($this->profiles[$profile]['filters'])){
-            $filters = $this->profiles[$profile]['filters'];
+        if (isset($this->profiles[$profileKey]['filters'])) {
+            $filters = $this->profiles[$profileKey]['filters'];
         }
 
         return $filters;
@@ -623,10 +725,13 @@ class SingularStore extends SingularService
      */
     protected function getGroupings($profile)
     {
-        $groupings = [];
+        $compose = $this->getNamespacedProfile($profile);
+        $profileNs = $compose['namespace'];
+        $groupings = ($profileNs !== false) ? $this->getGroupings($compose['namespace']) : [];
+        $profileKey = $compose['profile'];
 
-        if (isset($this->profiles[$profile]['groupings'])) {
-            $groupings = $this->profiles[$profile]['groupings'];
+        if (isset($this->profiles[$profileKey]['groupings'])) {
+            $groupings = $this->profiles[$profileKey]['groupings'];
         }
 
         return $groupings;
@@ -655,6 +760,30 @@ class SingularStore extends SingularService
         }
 
         return $names;
+    }
+
+    /**
+     * Recupera um array com o namespace e nome do perfil.
+     *
+     * @param string $profile
+     *
+     * @return array
+     */
+    protected function getNamespacedProfile($profile)
+    {
+        $parts = explode('.', $profile);
+
+        if (count($parts) < 2) {
+            return [
+                'namespace' => false,
+                'profile' => $profile
+            ];
+        }
+
+        return [
+            'namespace' => $parts[0],
+            'profile' => $parts[1]
+        ];
     }
 
     /**

@@ -45,8 +45,9 @@ class ControllerResolver
     {
         $app = $this->app;
 
-        $relativeNamespace = preg_replace('/'.$pack->getNameSpace().'/', '', $reflectionClass->getName(), 1);
-        $controllerKey = $pack->getPackName().strtolower(implode('.', explode('\\', $relativeNamespace)));
+
+        $snakeClass = implode('_',preg_split('/(?=[A-Z])/', $reflectionClass->getShortName(), -1, PREG_SPLIT_NO_EMPTY));
+        $controllerKey = implode('.',[$pack->getPackName(),'controller', strtolower($snakeClass)]);
         $controller = $reflectionClass->getShortName();
 
         $app[$controllerKey] = function () use ($app, $reflectionClass, $pack) {
@@ -60,9 +61,10 @@ class ControllerResolver
         $this->registerControllerFilters($$controller, $controllerKey,  $annotation->filters);
         $this->registerRoutes($$controller, $controllerKey, $reflectionClass);
 
-        $routePattern = ($annotation->mount != '')  ? $pack->getPackName().'/'.$annotation->mount : $pack->getPackName().'/'.strtolower($controller);
+        $routePattern = ($annotation->mount != '')  ? $pack->getPackName().'/'.$annotation->mount : $pack->getPackName().'/'.strtolower($snakeClass);
+
         $this->app['controllers']->mount($routePattern, $$controller);
-//        print_r($app);
+
     }
 
     /**
@@ -108,9 +110,9 @@ class ControllerResolver
 
             if ($annotation->pattern) {
                 $container = $app;
-
                 $ctr = $container->match($annotation->pattern, $controllerService.':'.$reflectionMethod->getName())->method(implode('|', $routeMethods));
             } else {
+
                 $ctr = $controller->match($this->getRoutePattern($reflectionMethod), $controllerService.':'.$reflectionMethod->getName())->method(implode('|', $routeMethods));
             }
 

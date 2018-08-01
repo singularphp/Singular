@@ -109,7 +109,7 @@ class SingularController extends SingularService
      */
     protected function getBaseFilters()
     {
-        return array();
+        return [];
     }
 
     /**

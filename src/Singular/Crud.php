@@ -29,7 +29,11 @@ trait Crud
 
         return $app->json(array(
             'success' => true,
-            'results' => $store->findAll(array(), $request->get('sort', $this->sort)),
+            'results' => $store->findAll(
+                [],
+                $request->get('sort', $this->sort
+                )
+            )
         ));
     }
 
@@ -46,6 +50,7 @@ trait Crud
     {
         $app = $this->app;
 
+        /** @var SingularStore $store */
         $store = $this->getStore();
 
         $filters = $request->get('filter', $this->getBaseFilters());
@@ -71,7 +76,7 @@ trait Crud
     {
         $app = $this->app;
 
-        // @var Store
+        /** @var SingularStore $store */
         $store = $this->getStore();
 
         return $app->json(array(
