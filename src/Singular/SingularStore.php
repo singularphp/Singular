@@ -372,9 +372,17 @@ class SingularStore extends SingularService
     public function remove($id)
     {
         try {
-            $this->db->delete($this->table, array(
-                $this->primaryKey => $id
-            ));
+            if ($this->softDelete) {
+                $removed = [];
+                $removed[$this->primaryKey] = $id;
+                $removed[$this->softDeleteName] = date('Y-m-d H:i:s');
+
+                $this->save($removed);
+            } else {
+                $this->db->delete($this->table, array(
+                    $this->primaryKey => $id
+                ));
+            }
 
             return true;
         } catch (\Exception $e) {
