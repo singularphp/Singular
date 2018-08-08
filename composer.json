@@ -10,6 +10,7 @@
     "require": {
         "php": ">=5.6.10",
         "silex/silex": "2.2.4",
+        "doctrine/annotations": "1.4.0",
         "symfony/yaml": "~3.2",
         "symfony/finder": ">=2.2",
         "doctrine/dbal": "2.5.13",
