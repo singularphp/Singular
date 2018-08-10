@@ -229,7 +229,7 @@ trait Crud
         if (method_exists($this, 'afterRemove')) {
             $response = $this->afterRemove($request, $response);
 
-            if ($response instanceof $response) {
+            if ($response instanceof Response) {
                 return $response;
             }
         }
