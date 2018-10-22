@@ -291,14 +291,18 @@ class ControllerResolver
         if ($type == 'before') {
             $callback = function (Request $request) use ($controllerService, $app, $method) {
                 $service = $this->locateService($controllerService, $method);
+                $method = $service['service_method'];
+                $class = $service['service_class'];
 
-                return $app[$service['service_class']]->$service['service_method']($request);
+                return $app[$class]->$method($request);
             };
         } else {
             $callback = function (Request $request, Response $response) use ($controllerService, $app, $method) {
                 $service = $this->locateService($controllerService, $method);
+                $method = $service['service_method'];
+                $class = $service['service_class'];
 
-                return $app[$service['service_class']]->$service['service_method']($request, $response);
+                return $app[$class]->$method($request, $response);
             };
         }
 
