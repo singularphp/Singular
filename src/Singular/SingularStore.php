@@ -184,12 +184,13 @@ class SingularStore extends SingularService
      * @param QueryBuilder $qb
      * @param array        $params
      * @param array        $pageOpts
+     * @param bool         $inDeleted
      *
      * @return array
      */
-    public function getAll(QueryBuilder $qb, array $params = [], array $pageOpts = [])
+    public function getAll(QueryBuilder $qb, array $params = [], array $pageOpts = [], $inDeleted = false)
     {
-        if ($this->softDelete) {
+        if ($this->softDelete && !$inDeleted) {
             $qb->andWhere('t.'.$this->softDeleteName.' IS NULL');
         }
 
@@ -207,12 +208,13 @@ class SingularStore extends SingularService
      *
      * @param QueryBuilder $qb
      * @param array        $params
+     * @param bool         $inDeleted
      *
      * @return array
      */
-    public function getRow(QueryBuilder $qb, array $params = [])
+    public function getRow(QueryBuilder $qb, array $params = [], $inDeleted = false)
     {
-        if ($this->softDelete) {
+        if ($this->softDelete && !$inDeleted) {
             $qb->andWhere('t.'.$this->softDeleteName.' IS NULL');
         }
 
@@ -233,10 +235,11 @@ class SingularStore extends SingularService
      * Localiza um registro unico pelo seu id.
      *
      * @param integer $id
+     * @param bool    $inDeleted
      *
      * @return array
      */
-    public function find($id)
+    public function find($id, $inDeleted = false)
     {
         $qb = $this->db->createQueryBuilder();
 
@@ -250,17 +253,18 @@ class SingularStore extends SingularService
 
         $params['id'] = $id;
 
-        return $this->getRow($qb, $params);
+        return $this->getRow($qb, $params, $inDeleted);
     }
 
     /**
      * Localiza o primeiro registro que casa com um conjunto de filtros.
      *
      * @param array $filters
+     * @param bool  $inDeleted
      *
      * @return array
      */
-    public function findOneBy($filters)
+    public function findOneBy($filters, $inDeleted = false)
     {
         $qb = $this->db->createQueryBuilder();
 
@@ -272,7 +276,7 @@ class SingularStore extends SingularService
         $params = $this->addFilters($qb, $this->getFilters($this->profile));
         $params = array_merge($params, $this->addFilters($qb, $filters));
 
-        return $this->getRow($qb, $params);
+        return $this->getRow($qb, $params, $inDeleted);
     }
 
     /**
@@ -281,10 +285,11 @@ class SingularStore extends SingularService
      * @param array $filters
      * @param array $pageOpts
      * @param array $sort
+     * @param bool  $inDeleted
      *
      * @return array
      */
-    public function findBy($filters, $pageOpts = array(), $sort = array())
+    public function findBy($filters, $pageOpts = array(), $sort = array(), $inDeleted = false)
     {
         $qb = $this->db->createQueryBuilder();
 
@@ -298,7 +303,7 @@ class SingularStore extends SingularService
         $this->addGrouping($qb, $this->getGroupings($this->profile));
         $this->addSort($qb, $sort);
 
-        return $this->getAll($qb, $params, $pageOpts);
+        return $this->getAll($qb, $params, $pageOpts, $inDeleted);
     }
 
     /**
@@ -306,10 +311,11 @@ class SingularStore extends SingularService
      *
      * @param array $pageOpts
      * @param array $sort
+     * @param bool  $inDeleted
      *
      * @return array
      */
-    public function findAll($pageOpts = array(), $sort = array())
+    public function findAll($pageOpts = array(), $sort = array(), $inDeleted = false)
     {
         $qb = $this->db->createQueryBuilder();
 
@@ -322,7 +328,7 @@ class SingularStore extends SingularService
         $this->addGrouping($qb, $this->getGroupings($this->profile));
         $this->addSort($qb, $sort);
 
-        return $this->getAll($qb, $params, $pageOpts);
+        return $this->getAll($qb, $params, $pageOpts, $inDeleted);
     }
 
     /**
