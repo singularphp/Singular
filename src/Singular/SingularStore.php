@@ -350,7 +350,7 @@ class SingularStore extends SingularService
 
                 $id = $this->insert($data);
             } else {
-                if ($this->find($data[$this->primaryKey])) {
+                if ($this->find($data[$this->primaryKey], true)) {
                     $this->update($data);
                 } else {
                     $this->insert($data);
