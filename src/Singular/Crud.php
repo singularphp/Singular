@@ -69,10 +69,10 @@ trait Crud
         $data['success'] = true;
 
         if (method_exists($this, 'afterFind')) {
-            $response = $this->afterFind($request, $data);
+            $data = $this->afterFind($request, $data);
 
             if ($data instanceof Response) {
-                return $response;
+                return $data;
             }
         }
 
