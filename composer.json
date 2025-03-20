@@ -13,7 +13,7 @@
         "symfony/finder": "3.2.8",
         "doctrine/dbal": "2.5.12",
         "danaki/config-service-provider": "dev-master",
-        "twig/twig": ">=1.8,<2.0",
+        "twig/twig": ">=1.8",
         "symfony/twig-bridge": "~2.3",
         "monolog/monolog": "1.22.1",
         "symfony/filesystem": "3.2.8"
