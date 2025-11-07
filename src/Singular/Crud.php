@@ -214,17 +214,50 @@ trait Crud
             $ids[] = $request->get('id');
         }
 
-        $success = true;
+        $app['db']->beginTransaction();
 
-        foreach ($ids as $idx => $id) {
-            if (!$store->remove($id)) {
-                $success = false;
+        try {
+            $success = true;
+
+            foreach ($ids as $idx => $id) {
+                if (!$store->remove($id)) {
+                    $success = false;
+                }
+            }
+
+            $response = [
+                'success' => $success
+            ];
+
+            $app['db']->commit();
+
+        } catch (\Exception $e) {
+            $app['db']->rollback();
+
+            // Tratamento genérico de exceções (similar ao método save)
+            // Se a exceção tem código HTTP >= 400, retornar resposta estruturada
+            // Isso permite que módulos externos usem códigos HTTP para indicar erros específicos
+            if ($e->getCode() >= 400 && $e->getCode() < 600) {
+                $response = [
+                    'success' => false,
+                    'code' => $e->getCode(),
+                    'message' => $e->getMessage()
+                ];
+                
+                // Se a exceção implementa métodos para dados adicionais, incluí-los na resposta
+                // (permite extensibilidade sem acoplamento)
+                if (method_exists($e, 'toArray')) {
+                    $response = array_merge($response, $e->toArray());
+                }
+            } else {
+                // Para outras exceções, retornar resposta genérica
+                $response = [
+                    'success' => false,
+                    'code' => $e->getCode(),
+                    'message' => $e->getMessage()
+                ];
             }
         }
-
-        $response = [
-            'success' => $success
-        ];
 
         if (method_exists($this, 'afterRemove')) {
             $response = $this->afterRemove($request, $response);
