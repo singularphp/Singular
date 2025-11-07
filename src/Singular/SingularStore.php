@@ -359,6 +359,20 @@ class SingularStore extends SingularService
                 $id = $data[$this->primaryKey];
             }
         } catch(\Exception $e) {
+            // Propagar exceções com código HTTP >= 400 (erros HTTP que devem ser tratados pelo error handler)
+            // Isso permite que módulos externos (como ComplianceHub) usem códigos HTTP específicos
+            // para indicar que a exceção deve ser propagada e tratada pelo error handler do framework
+            // 
+            // IMPORTANTE: Códigos de erro do banco de dados (MySQL/PostgreSQL) são geralmente >= 1000,
+            // então a verificação >= 400 && < 600 garante que apenas exceções HTTP sejam propagadas.
+            // Exceções de banco de dados (violações de chave estrangeira, etc.) continuarão retornando
+            // arrays de erro, mantendo compatibilidade com código existente.
+            if ($e->getCode() >= 400 && $e->getCode() < 600) {
+                throw $e;
+            }
+            
+            // Para outras exceções (incluindo erros de banco de dados), manter comportamento original (retornar array de erro)
+            // Isso garante compatibilidade com código existente que espera arrays de erro para violações de chave estrangeira, etc.
             return [
                 'code' => $e->getCode(),
                 'message' => $e->getMessage()
@@ -392,6 +406,18 @@ class SingularStore extends SingularService
 
             return true;
         } catch (\Exception $e) {
+            // Propagar exceções com código HTTP >= 400 (erros HTTP que devem ser tratados pelo error handler)
+            // Isso permite que módulos externos (como ComplianceHub) usem códigos HTTP específicos
+            // para indicar que a exceção deve ser propagada e tratada pelo error handler do framework
+            // 
+            // IMPORTANTE: Códigos de erro do banco de dados (MySQL/PostgreSQL) são geralmente >= 1000,
+            // então a verificação >= 400 && < 600 garante que apenas exceções HTTP sejam propagadas.
+            // Exceções de banco de dados continuarão retornando false, mantendo compatibilidade.
+            if ($e->getCode() >= 400 && $e->getCode() < 600) {
+                throw $e;
+            }
+            
+            // Para outras exceções (incluindo erros de banco de dados), manter comportamento original (retornar false)
             return false;
         }
     }
